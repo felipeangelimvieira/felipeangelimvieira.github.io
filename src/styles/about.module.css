@@ -1,0 +1,12 @@
+.container {
+    text-align: center;
+    background-color: #fff;
+}
+
+.imageContainer {
+    display: inline-block;
+}
+
+.photo {
+    width : 16%;
+}

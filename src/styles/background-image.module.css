@@ -1,0 +1,61 @@
+.container {
+    position: relative;
+    text-align: center;
+    background-color: #000203;
+    display: block
+  }
+
+.image {
+    display: block;
+    width: 100%;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.imageContentContainer {
+    position: absolute;
+    width: 100%;
+    top: 0vw;
+    left: 0vw;
+    text-align: left;
+    
+}
+
+.imageTextContainer {
+    position: relative;
+    padding-top: 8vw;
+    padding-left: 10vw;
+    text-align: left;
+}
+
+
+.text {
+    color: #fff;
+    font-size: 3vw;
+    margin: 0;
+}
+
+.mainMessage{
+    color: #fff;
+    font-size: calc(16px + (60 - 14) * ((100vw - 300px) / (1600 - 300)));
+    margin: calc(1.3em + (1.3 - 1.2) * ((100vw - 300px)/(1600 - 300))) 0;
+    line-height: calc(1.0em + (1.4 - 1.2) * ((100vw - 300px)/(1600 - 300)));
+    font-weight: bold;
+}
+
+.arrowContainer {
+    position: relative;
+    width: 100%
+}
+
+.arrowContainer {
+    position: relative;
+    padding: calc(1.0em + (120 - 1.2) * ((100vw - 300px)/(1600 - 300)));
+    text-align: center;
+}
+
+.arrow {
+    width: calc(16px + (70 - 14) * ((100vw - 300px) / (1600 - 300)));
+    
+}
+
