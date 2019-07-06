@@ -13,15 +13,20 @@ export default () => (
             </div>
             
             <div className={styles.descriptionContainer}>
-            <p className={styles.description}>I'm a double-degree engineering student at
+            <p className={styles.description}>
+             I'm a double-degree engineering student at
              École Centrale de Lyon and Federal University of Rio de Janeiro, currently finishing my studies
-             in Brazil. I'm always reading the latest scientific papers on Machine Learning to keep updated about
-             cutting-edge technology. Feel free to contact me if you're interested in working together on a project
-             or needing help with some AI product.
+             in Brazil. I'm always reading the latest scientific papers on Machine Learning to keep updated on
+             cutting-edge technology. Feel free to contact me if you're needing help with some AI product
+             or if you're interested in working together on a project.
             </p>
+            <p >During my academic internships, I improved my knowledge on 3D object recognition,
+                Natural Language Processing and Spatial-temporal clustering. 
+            </p>
+
             </div>
             
-            <p >I'm machine learning engineering student</p>
+            
             <p >I use data and maths to solve problems</p>
         </div>
 )
