@@ -1,6 +1,7 @@
 import React from "react";
 import Landing from "../components/landing";
 import About from '../components/about';
+import Timeline from '../components/timeline';
 import styles from '../styles/global.css';
 import { graphql } from 'gatsby';
 
@@ -8,6 +9,7 @@ import { graphql } from 'gatsby';
 export default ({data}) => (<div className={styles.body}>
         <Landing data={data}/>
         <About />
+        <Timeline/>
 </div>)
 
 

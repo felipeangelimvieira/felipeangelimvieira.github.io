@@ -1,6 +1,7 @@
 import React from 'react';
 import photo from '../assets/photo-about.png'
 import styles from '../styles/about.module.css';
+import Timeline from 'react-dual-timeline'
 
 export default () => (
 
