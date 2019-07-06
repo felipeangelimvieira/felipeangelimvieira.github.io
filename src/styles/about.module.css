@@ -4,9 +4,17 @@
 }
 
 .imageContainer {
+    padding-top: calc(16px + (60 - 14) * ((100vw - 300px) / (1600 - 300)));
     display: inline-block;
 }
 
 .photo {
     width : 16%;
+}
+
+.descriptionContainer {
+
+    margin-left: 13%;
+    margin-right: 13%;
+    text-align: justify;
 }

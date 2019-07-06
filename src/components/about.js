@@ -13,9 +13,11 @@ export default () => (
             </div>
             
             <div className={styles.descriptionContainer}>
-            <p className={styles.description}>I'm a double-degree student from
+            <p className={styles.description}>I'm a double-degree engineering student at
              École Centrale de Lyon and Federal University of Rio de Janeiro, currently finishing my studies
-             in Brazil.
+             in Brazil. I'm always reading the latest scientific papers on Machine Learning to keep updated about
+             cutting-edge technology. Feel free to contact me if you're interested in working together on a project
+             or needing help with some AI product.
             </p>
             </div>
             
