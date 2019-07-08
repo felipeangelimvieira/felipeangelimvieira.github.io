@@ -33,3 +33,14 @@
 .descriptionContainer {
     margin-top: 3vh;
 }
+
+.icon {
+    height: 30px;
+    width: 30px;
+}
+
+.iconButton {
+    vertical-align: center;
+    margin: 0;
+    padding: 0;
+}
