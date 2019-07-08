@@ -1,5 +1,5 @@
 
-amadeus = {
+const amadeus = {
     type: "work",
     date: "Nov 2018 - April 2019 ",
     title: "Data Science Intern",
@@ -7,7 +7,4 @@ amadeus = {
     description: " Lorem ipsum amed"
 }
 
-export const data = {
-    data: [amadeus]
-
-}
+export const data = [amadeus]

@@ -2,100 +2,149 @@ import React from 'react';
 import { StyleRoot } from 'radium'
 import { VerticalTimeline, VerticalTimelineElement }  from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
-import {School} from '@material-ui/icons';
+import {School, Work, Description } from '@material-ui/icons';
 
-import schoolIcon from '../assets/outline-school-24px.svg'
+import timelineData from '../assets/timeline-data';
 
+
+function classNameMap(x)
+{
+    const className = {
+                    "work" : "vertical-timeline-element--work",
+                    "education" : "vertical-timeline-element--education"
+                    }
+
+    var classname = className[x];
+    if (!classname){
+        return "vertical-timeline-element--education"
+    }
+    return classname
+}
+
+function iconMap(x) {
+
+    const corresp = {
+        "work" : <Work/>,
+        "educaton" : <School/>,
+        "publication" : <Description />
+    };
+
+    return corresp[x];
+
+}
+
+function parseElement(x) {
+
+    return (
+    <VerticalTimelineElement
+    className={ classNameMap(x.type) }
+    date={x.date}
+    iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff', textAlign: 'center'}}
+    icon= {iconMap(x.type)} >
+    <h3 className="vertical-timeline-element-title">{x.title}</h3>
+    <h4 className="vertical-timeline-element-subtitle">{x.subtitle}</h4>
+    <p>
+      {x.description}
+    </p>
+  </VerticalTimelineElement>
+    )
+}
 
 export default () => (
+
+<div>
+<div style = {{textAlign : "center"}}>
+    <h1>Experience</h1>
+</div>
 <VerticalTimeline>
-  <VerticalTimelineElement
+<VerticalTimelineElement
     className="vertical-timeline-element--work"
-    date="2011 - present"
-    iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff', textAlign: 'center'}}
-    icon= {<School />}
-  >
-    <h3 className="vertical-timeline-element-title">Creative Director</h3>
-    <h4 className="vertical-timeline-element-subtitle">Miami, FL</h4>
-    <p>
-      Creative Direction, User Experience, Visual Design, Project Management, Team Leading
-    </p>
-  </VerticalTimelineElement>
-  <VerticalTimelineElement
-    className="vertical-timeline-element--work"
-    date="2010 - 2011"
+    date="May 2019 - present"
     iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
-    icon="x"
+    icon={<Work />}
   >
-    <h3 className="vertical-timeline-element-title">Art Director</h3>
-    <h4 className="vertical-timeline-element-subtitle">San Francisco, CA</h4>
+    <h3 className="vertical-timeline-element-title">Data Analyst</h3>
+    <h4 className="vertical-timeline-element-subtitle">Brasa (Brazilian Student Association)</h4>
     <p>
-      Creative Direction, User Experience, Visual Design, SEO, Online Marketing
+        As a member of Tech team, I manage the SQL databases and build BI dashboards.
+    </p>
+</VerticalTimelineElement>
+
+<VerticalTimelineElement
+    className="vertical-timeline-element--work"
+    date="Nov 2018 - April 2019"
+    iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
+    icon={<Work />}
+  >
+    <h3 className="vertical-timeline-element-title">Data Science Intern</h3>
+    <h4 className="vertical-timeline-element-subtitle">Amadeus - Nice, France</h4>
+    <p>
+        Development of clustering algorithm and NLP model
+        that could identify flights' cancellation reasons from text and historical data.
     </p>
   </VerticalTimelineElement>
+
   <VerticalTimelineElement
     className="vertical-timeline-element--work"
-    date="2008 - 2010"
+    date="May 2018 - Nov 2018"
     iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
-    icon="x"
+    icon={<Work />}
   >
-    <h3 className="vertical-timeline-element-title">Web Designer</h3>
-    <h4 className="vertical-timeline-element-subtitle">Los Angeles, CA</h4>
+    <h3 className="vertical-timeline-element-title">Machine Learning Intern</h3>
+    <h4 className="vertical-timeline-element-subtitle">Dassault Systèmes - Paris, France</h4>
     <p>
-      User Experience, Visual Design
+        Enhanced 3D object classification algorithms by implementing cutting-edge technology.
+        At the end of my internship, I had reduced the classification error by more than 60%.
     </p>
   </VerticalTimelineElement>
+
   <VerticalTimelineElement
     className="vertical-timeline-element--work"
-    date="2006 - 2008"
+    date="Oct 2015 - Jul 2016"
     iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
-    icon="x"
+    icon={<Work />}
   >
-    <h3 className="vertical-timeline-element-title">Web Designer</h3>
-    <h4 className="vertical-timeline-element-subtitle">San Francisco, CA</h4>
+    <h3 className="vertical-timeline-element-title">Co-founder and Powertrain manager</h3>
+    <h4 className="vertical-timeline-element-subtitle">Minerva eRacing - Rio de Janeiro, Brazil</h4>
     <p>
-      User Experience, Visual Design
+        I co-founded and managed the powertrain team of the first Formula SAE Electric
+        team of my University.
     </p>
   </VerticalTimelineElement>
-  <VerticalTimelineElement
-    className="vertical-timeline-element--education"
-    date="April 2013"
-    iconStyle={{ background: 'rgb(233, 30, 99)', color: '#fff' }}
-    icon="x"
-  >
-    <h3 className="vertical-timeline-element-title">Content Marketing for Web, Mobile and Social Media</h3>
-    <h4 className="vertical-timeline-element-subtitle">Online Course</h4>
-    <p>
-      Strategy, Social Media
-    </p>
-  </VerticalTimelineElement>
-  <VerticalTimelineElement
-    className="vertical-timeline-element--education"
-    date="November 2012"
-    iconStyle={{ background: 'rgb(233, 30, 99)', color: '#fff' }}
-    icon="x"
-  >
-    <h3 className="vertical-timeline-element-title">Agile Development Scrum Master</h3>
-    <h4 className="vertical-timeline-element-subtitle">Certification</h4>
-    <p>
-      Creative Direction, User Experience, Visual Design
-    </p>
-  </VerticalTimelineElement>
-  <VerticalTimelineElement
-    className="vertical-timeline-element--education"
-    date="2002 - 2006"
-    iconStyle={{ background: 'rgb(233, 30, 99)', color: '#fff' }}
-    icon="x"
-  >
-    <h3 className="vertical-timeline-element-title">Bachelor of Science in Interactive Digital Media Visual Imaging</h3>
-    <h4 className="vertical-timeline-element-subtitle">Bachelor Degree</h4>
-    <p>
-      Creative Direction, Visual Design
-    </p>
-  </VerticalTimelineElement>
-  <VerticalTimelineElement
-    iconStyle={{ background: 'rgb(16, 204, 82)', color: '#fff' }}
-    icon="x"
-  />
+
 </VerticalTimeline>
+
+<div style = {{textAlign : "center"}}>
+    <h1>Education</h1>
+</div>
+
+<VerticalTimeline>
+<VerticalTimelineElement
+    className="vertical-timeline-element--work"
+    date="2016 - 2018"
+    iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
+    icon={<School />}
+  >
+    <h3 className="vertical-timeline-element-title">École Centrale de Lyon</h3>
+    <h4 className="vertical-timeline-element-subtitle">Generalist Engineering</h4>
+    <p>
+        Double-degree program, awarded an Eiffel Excellence Scholarship.
+    </p>
+</VerticalTimelineElement>
+
+<VerticalTimelineElement
+    className="vertical-timeline-element--work"
+    date="2014 - 2020"
+    iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
+    icon={<School />}
+  >
+    <h3 className="vertical-timeline-element-title">Federal University of Rio de Janeiro (UFRJ)</h3>
+    <h4 className="vertical-timeline-element-subtitle">Mechanical Engineering</h4>
+
+</VerticalTimelineElement>
+
+</VerticalTimeline>
+
+
+</div>
 )

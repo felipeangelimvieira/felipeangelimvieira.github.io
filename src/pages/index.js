@@ -19,7 +19,7 @@ export const query = graphql`
 query {
     imageOne: file(relativePath: { eq: "background-crop1.jpg" }) {
       childImageSharp {
-        fluid(maxWidth: 1000) {
+        fluid(maxWidth: 3000) {
           base64
           tracedSVG
           aspectRatio

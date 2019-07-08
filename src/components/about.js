@@ -24,10 +24,7 @@ export default () => (
             <p >During my academic internships, I improved my knowledge on 3D object recognition,
                 Natural Language Processing and Spatial-temporal clustering. 
             </p>
-
             </div>
             
-            
-            <p >I use data and maths to solve problems</p>
         </div>
 )

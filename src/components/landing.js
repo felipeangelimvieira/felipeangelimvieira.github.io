@@ -9,7 +9,7 @@ export default props => {
     return (
 
         <div className={styles.container}>
-            <Img fluid={props.data.imageOne.childImageSharp.fluid} />
+            <Img style ={{zoom: "1600%"}} fluid={props.data.imageOne.childImageSharp.fluid} />
             <div className = {styles.imageContentContainer}>
             <div className = {styles.imageTextContainer}>
             <p className={styles.text}>Hello, it's Felipe.</p>
