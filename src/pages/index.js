@@ -4,6 +4,8 @@ import About from '../components/about';
 import Timeline from '../components/resume';
 import styles from '../styles/global.css';
 import { graphql } from 'gatsby';
+import { StickyContainer, Sticky } from 'react-sticky';
+import {Navbar, NavDropdown, Nav} from 'react-bootstrap'
 
 
 export default ({data}) => (<div className={styles.body}>
