@@ -4,6 +4,7 @@ import 'react-vertical-timeline-component/style.min.css';
 import {School, Work, Description } from '@material-ui/icons';
 import {Chip} from '@material-ui/core';
 import styles from '../styles/resume.module.css';
+import Projects from './projects';
 
 import timelineData from '../assets/timeline-data';
 
@@ -107,7 +108,7 @@ export default () => (
     
     <Chip label="Tensorflow" className={styles.chip}/>
     <Chip label="3D object classification" className={styles.chip}/>
-    <Chip label="3D object classification" className={styles.chip}/>
+    <Chip label="EDA" className={styles.chip}/>
     </div>
     
     <h3 className="vertical-timeline-element-title">Machine Learning Intern</h3>
@@ -124,6 +125,9 @@ export default () => (
     iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
     icon={<Work />}
   >
+    <Chip label="Matlab" className={styles.chip}/>
+    <Chip label="Management" className={styles.chip}/>
+
     <h3 className="vertical-timeline-element-title">Co-founder and Powertrain manager</h3>
     <h4 className="vertical-timeline-element-subtitle">Minerva eRacing - Rio de Janeiro, Brazil</h4>
     <p>
@@ -168,39 +172,7 @@ export default () => (
 
 </VerticalTimeline>
 
-<div style = {{textAlign : "center"}}>
-    <h1>Projects</h1>
-</div>
-
-<VerticalTimeline>
-<VerticalTimelineElement
-    className="vertical-timeline-element--work"
-    date="2016 - 2018"
-    iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
-    icon={<School />}
-  >
-    <h3 className="vertical-timeline-element-title">École Centrale de Lyon</h3>
-    <h4 className="vertical-timeline-element-subtitle">Generalist Engineering</h4>
-    <p>
-        Double-degree program, awarded an Eiffel Excellence Scholarship.
-    </p>
-</VerticalTimelineElement>
-
-<VerticalTimelineElement
-    className="vertical-timeline-element--work"
-    date="2014 - 2020"
-    iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
-    icon={<School />}
-  >
-    <h3 className="vertical-timeline-element-title">Federal University of Rio de Janeiro (UFRJ)</h3>
-    <h4 className="vertical-timeline-element-subtitle">Mechanical Engineering</h4>
-    <p>
-        My grade during the first four semesters in the university placed me among the 1.5% best students
-        in Mechanical Engineering department.
-    </p>
-</VerticalTimelineElement>
-
-</VerticalTimeline>
+  <Projects/>
 
 </div>
 )
