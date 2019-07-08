@@ -1,4 +1,6 @@
 import React from 'react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+
 import backgroundImage from '../assets/background-crop1.jpg';
 import arrow from '../assets/baseline_keyboard_arrow_down_white_48dp.png'
 import styles from '../styles/background-image.module.css';
@@ -9,7 +11,8 @@ export default props => {
     return (
 
         <div className={styles.container}>
-            <Img style ={{zoom: "1600%"}} fluid={props.data.imageOne.childImageSharp.fluid} />
+            
+            <img src={backgroundImage} className = {styles.image}/>
             <div className = {styles.imageContentContainer}>
             <div className = {styles.imageTextContainer}>
             <p className={styles.text}>Hello, it's Felipe.</p>

@@ -1,7 +1,7 @@
 import React from "react";
 import Landing from "../components/landing";
 import About from '../components/about';
-import Timeline from '../components/timeline';
+import Timeline from '../components/resume';
 import styles from '../styles/global.css';
 import { graphql } from 'gatsby';
 

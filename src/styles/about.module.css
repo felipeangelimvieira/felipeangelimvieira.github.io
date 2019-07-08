@@ -9,7 +9,7 @@
 }
 
 .photo {
-    width : 16%;
+    width : calc(120px + 12vw);
 }
 
 .descriptionContainer {
