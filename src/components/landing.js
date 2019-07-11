@@ -1,7 +1,7 @@
 import React from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
-import backgroundImage from '../assets/background-crop1.jpg';
+import backgroundImage from '../assets/background-crop1_2500.jpg';
 import arrow from '../assets/baseline_keyboard_arrow_down_white_48dp.png'
 import styles from '../styles/background-image.module.css';
 import Img from 'gatsby-image';
