@@ -63,7 +63,7 @@ export default function() {
         </Typography>
         <div className = {classes.descriptionContainer}>
         <Typography className={classes.description} variant="body2" component="p">
-          I built this portfolio using React.js and Gatsby.js, and hosted it on github pages.
+          This portfolio was built using React.js and Gatsby.js, and hosted it on github pages.
           Feel free to fork it! :)
         </Typography>
         </div>
