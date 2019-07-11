@@ -60,7 +60,7 @@ export default () => (
 <div className = {styles.titleContainer}>
     <h1>Résumé</h1>
 </div>
-<VerticalTimeline>
+<VerticalTimeline style= {{willChange: 'transform'}}>
 <VerticalTimelineElement
     className="vertical-timeline-element--work"
     date="May 2019 - present"
