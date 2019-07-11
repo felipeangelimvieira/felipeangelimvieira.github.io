@@ -23,7 +23,7 @@ export default function() {
         <div className = {classes.container}>
             <h1>Projects</h1>
         <Card className={classes.card}>
-      <CardContent>
+        <CardContent>
         <Typography className={classes.theme} color="textSecondary" gutterBottom>
           Full-stack developer
         </Typography>
@@ -37,10 +37,8 @@ export default function() {
           This project is currently under development.
         </Typography>
         </div>
-      </CardContent>
-      <CardActions>
-      
-        
+        </CardContent>
+        <CardActions>
 
         <a href = "https://github.com/felipeangelimvieira/comovotadeputado"> 
         <IconButton className={classes.iconButton} aria-label="Add to favorites">
@@ -48,8 +46,35 @@ export default function() {
         </IconButton>
         </a>
 
+        <a href="https://comovota.herokuapp.com/">
         <Button size="small">Learn More</Button>
+        </a>
+        
+      </CardActions>
+    </Card>
 
+    <Card className={classes.card}>
+        <CardContent>
+        <Typography className={classes.theme} color="textSecondary" gutterBottom>
+          Full-stack developer
+        </Typography>
+        <Typography className={classes.title} variant="h5" component="h2">
+          My portfolio
+        </Typography>
+        <div className = {classes.descriptionContainer}>
+        <Typography className={classes.description} variant="body2" component="p">
+          I built this portfolio using React.js and Gatsby.js, and hosted it on github pages.
+          Feel free to fork it! :)
+        </Typography>
+        </div>
+        </CardContent>
+        <CardActions>
+
+        <a href = "https://github.com/felipeangelimvieira/felipeangelimvieira.github.io/tree/source"> 
+        <IconButton className={classes.iconButton} aria-label="Add to favorites">
+          <Code/>
+        </IconButton>
+        </a>
       </CardActions>
     </Card>
 
