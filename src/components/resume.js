@@ -5,6 +5,8 @@ import {School, Work, Description } from '@material-ui/icons';
 import {Chip} from '@material-ui/core';
 import styles from '../styles/resume.module.css';
 import Projects from './projects';
+import ScrollAnimation from 'react-animate-on-scroll';
+import "animate.css/animate.min.css";
 
 import timelineData from '../assets/timeline-data';
 
@@ -53,7 +55,7 @@ function parseElement(x) {
 }
 
 export default () => (
-
+<ScrollAnimation animateIn="fadeIn" animateOnce={true} offset={50} duration={2}>
 <div>
 <div className = {styles.titleContainer}>
     <h1>Résumé</h1>
@@ -175,4 +177,5 @@ export default () => (
   <Projects/>
 
 </div>
+</ScrollAnimation>
 )

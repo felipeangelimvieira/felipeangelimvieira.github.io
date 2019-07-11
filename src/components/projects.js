@@ -10,7 +10,8 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import githubIcon from '../assets/GitHub-Mark-64px.png'
 import SvgIcon from '@material-ui/core/SvgIcon'
-import githubSvg from '../assets/github.svg'
+import ScrollAnimation from 'react-animate-on-scroll';
+import "animate.css/animate.min.css";
 import {Code, FeaturedVideo, Description} from '@material-ui/icons'
 
 
@@ -21,7 +22,11 @@ export default function() {
 
     return (
         <div className = {classes.container}>
+            <ScrollAnimation animateIn="slideInUp" animateOnce={true} offset={50} duration={2}>
             <h1>Projects</h1>
+            </ScrollAnimation>
+        
+        <ScrollAnimation animateIn="slideInUp" animateOnce={true} offset={50} duration={2}>
         <Card className={classes.card}>
         <CardContent>
         <Typography className={classes.theme} color="textSecondary" gutterBottom>
@@ -52,7 +57,7 @@ export default function() {
         
       </CardActions>
     </Card>
-
+    
     <Card className={classes.card}>
         <CardContent>
         <Typography className={classes.theme} color="textSecondary" gutterBottom>
@@ -181,7 +186,7 @@ export default function() {
         
       </CardActions>
     </Card>
-
+    </ScrollAnimation>
     </div>
     )
 }

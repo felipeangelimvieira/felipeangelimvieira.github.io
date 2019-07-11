@@ -1,14 +1,18 @@
 import React from 'react';
 import photo from '../assets/photo-about.png'
 import styles from '../styles/about.module.css';
-import Timeline from 'react-dual-timeline'
+import ScrollAnimation from 'react-animate-on-scroll';
+import "animate.css/animate.min.css";
 
 export default () => (
 
         <div id="about" className = {styles.container}>
+            
             <div className = {styles.imageContainer}>
                 <img className={styles.photo} src={photo}></img>
             </div>
+            
+            <ScrollAnimation animateIn="slideInUp" animateOnce={true} offset={500} duration={2}>
             <div className={styles.aboutTextContainer}>
                 <h1 className={styles.aboutText}>About me</h1>
             </div>
@@ -33,6 +37,7 @@ export default () => (
              if you're needing help with some AI product
              or if you're interested in working together on a project.</p>
             </div>
+            </ScrollAnimation>
             
         </div>
 )
