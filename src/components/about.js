@@ -4,6 +4,8 @@ import styles from '../styles/about.module.css';
 import ScrollAnimation from 'react-animate-on-scroll';
 import "animate.css/animate.min.css";
 
+import Header from './Header';
+
 export default () => (
 
         <div id="about" className = {styles.container}>

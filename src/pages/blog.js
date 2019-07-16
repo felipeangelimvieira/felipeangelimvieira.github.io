@@ -1,6 +1,7 @@
 import React from "react"
 import { Link, graphql } from "gatsby"
 import { rhythm } from "../utils/typography"
+import styles from '../styles/blog.module.css'
 
 class BlogIndex extends React.Component {
   render() {

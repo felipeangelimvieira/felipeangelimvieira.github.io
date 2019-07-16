@@ -2,8 +2,9 @@
 
 import React from "react"
 import { Link, graphql } from "gatsby"
-
 import { rhythm, scale } from "../utils/typography"
+
+import styles from '../styles/blog-post.module.css'
 
 class BlogPostTemplate extends React.Component {
   render() {
@@ -14,21 +15,14 @@ class BlogPostTemplate extends React.Component {
 
     return (
       
-        <div>
+        <div className={styles.container}>
         <h1
-          style={{
-            marginTop: rhythm(1),
-            marginBottom: 0,
-          }}
+          className={styles.title}
         >
           {post.frontmatter.title}
         </h1>
         <p
-          style={{
-            ...scale(-1 / 5),
-            display: `block`,
-            marginBottom: rhythm(1),
-          }}
+          className = {styles.date}
         >
           {post.frontmatter.date}
         </p>
@@ -40,14 +34,8 @@ class BlogPostTemplate extends React.Component {
         />
         
 
-        <ul
-          style={{
-            display: `flex`,
-            flexWrap: `wrap`,
-            justifyContent: `space-between`,
-            listStyle: `none`,
-            padding: 0,
-          }}
+        <ul 
+          className={styles.nextPrevious}
         >
           <li>
             {previous && (
