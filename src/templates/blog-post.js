@@ -5,6 +5,8 @@ import { Link, graphql } from "gatsby"
 import { rhythm, scale } from "../utils/typography"
 
 import styles from '../styles/blog-post.module.css'
+import 'katex/dist/katex.min.css'
+import Header from '../components/Header'
 
 class BlogPostTemplate extends React.Component {
   render() {
@@ -14,8 +16,10 @@ class BlogPostTemplate extends React.Component {
     const { previous, next } = this.props.pageContext
 
     return (
-      
+        <div className = {styles.body}>
+          <Header />
         <div className={styles.container}>
+        
         <h1
           className={styles.title}
         >
@@ -52,6 +56,7 @@ class BlogPostTemplate extends React.Component {
             )}
           </li>
         </ul>
+      </div>
       </div>
     )
   }

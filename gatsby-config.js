@@ -11,9 +11,9 @@ module.exports = {
 
   siteMetadata: 
   {
-    title: `Gatsby Starter Blog`,
-    author: `Felipe Angelim`,
-    description: `Personal website`,
+    title: `Felipe Angelim - Portfolio and blog`,
+    author: `Felipe Lourenço Angelim Vieira`,
+    description: `Personal website and blog about data science and machile learning`,
   },
   plugins: [
     {
@@ -61,5 +61,19 @@ module.exports = {
     `gatsby-plugin-sharp`,
     `gatsby-transformer-sharp`,
     `gatsby-plugin-react-helmet`,
+    {
+      resolve: `gatsby-transformer-remark`,
+      options: {
+        plugins: [
+          {
+            resolve: `gatsby-remark-katex`,
+            options: {
+              // Add any KaTeX options from https://github.com/KaTeX/KaTeX/blob/master/docs/options.md here
+              strict: `ignore`
+            }
+          }
+        ],
+      },
+    },
   ],
 }

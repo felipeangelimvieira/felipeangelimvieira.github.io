@@ -69,9 +69,10 @@ Note: Beware of modifying this element as it can break the animations - you shou
   font-weight: bold;
   text-decoration: none;
   font-size: calc(15px + 0.8vw);
+  padding-top: 5vh;
   color: #fff;
 }
 
 .menu-item:hover {
-  color: #af3c3cd2;
+  color: #FF8282;
 }

@@ -1,12 +1,17 @@
+.body {
+    margin: 0;
+}
+
+
 .container {
     background-color : #fefefe;
     text-align: left;
-    margin: 20vh 20vw;
+    padding-top: 10vh;
+    margin: 0 calc(25vw);
 }
 .title {
     margin-top: 2vh;
     margin-bottom: 3vh;
-    font-size: calc(15px + 3vw);
     font-weight: bold;
 }
 
@@ -21,8 +26,16 @@
 }
 
 .date {
-    font-size: calc(5px + 0.6vw);
     display: block;
     margin-bottom: rhythm(1),
 }
 
+
+
+@media (max-width: 600px) {
+    
+    .container {
+        background-color : #fefefe;
+        margin: 0vh 5vw;
+    }
+}
