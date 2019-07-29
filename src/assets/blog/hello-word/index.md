@@ -28,7 +28,7 @@ $$
  V(G,D) = \mathbb{E}_{x \sim p_X}[\log D(x)] + \mathbb{E}_{z \sim p_Z}[\log ( 1 - D(G(z)))]
 $$
 
-where x is an image input and z is the latent space vector, and \textit{p} their respective distributions. We can interpret V as a measure of D accuracy. We optimize G and D through an adversarial objective $\min_{G} \max_{D}$ V(G,D). 
+where x is an image input and z is the latent space vector, and p their respective distributions. We can interpret V as a measure of D accuracy. We optimize G and D through an adversarial objective $\min_{G} \max_{D}$ V(G,D). 
 
 The new bidirectional GAN loss proposed in the paper is:
 
