@@ -1,11 +1,11 @@
 ---
 path: blog/generative-adversarial-networks
-title: Bidirectional GANs
+title: Bidirectional GANs for feature learning
 date: "2019-07-25T22:12:03.284Z"
-description: Using GANs to generate features.
+description: If I had to describe a Mondrian painting, I wouldn't remember its pixels. Instead, I would suggest the position of the lines and the color of the rectangles.
 ---
 
-If I had to describe a Mondrian painting, I wouldn't be able to do it pixelwise. I would mention the position of the lines and the color of the rectangles. Describing it pixel by pixel would be such a unnecessary task - we can simply take the most important features and save memory space in our brains.
+If I had to describe a Mondrian painting, I wouldn't remember its pixels. Instead, I would suggest the position of the lines and the color of the rectangles. Describing it pixel by pixel would be such a unnecessary task - we can simply take the most important features and save memory space in our brains.
 
 In feature learning, we train machine learning models to extract meaningful features from data.  Given the complexity of an image, this is not an easy task. Guaranteeing that the model won't focus on details such as hair and freckles in a face depends heavily on the function we are optimizing.
 In autoencoders, for example, we minimize a pixelwise distance between the real and generated images. The model, therefore, captures minor details and doesn't prioritize the main content in an image.
