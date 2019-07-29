@@ -41,10 +41,8 @@ module.exports = {
       options: {
         plugins: [
           {
-            resolve: `gatsby-remark-images`,
-            options: {
-              maxWidth: 590,
-            },
+              resolve: `gatsby-remark-figure-caption`,
+              options: {figureClassName: 'md-figure'}, 
           },
           {
             resolve: `gatsby-remark-responsive-iframe`,
@@ -71,9 +69,19 @@ module.exports = {
               // Add any KaTeX options from https://github.com/KaTeX/KaTeX/blob/master/docs/options.md here
               strict: `ignore`
             }
+          },
+          {
+            resolve: `gatsby-remark-images`,
+            options: {
+              // It's important to specify the maxWidth (in pixels) of
+              // the content container as this plugin uses this as the
+              // base for generating different widths of each image.
+              maxWidth: 590,
+            }
           }
         ],
       },
     },
+    
   ],
 }

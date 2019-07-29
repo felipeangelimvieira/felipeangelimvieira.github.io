@@ -73,7 +73,7 @@
     width:auto;
     
     vertical-align: middle;
-    height: auto;
+    height: 100%;
     max-width: calc(70px + 2vw);
     max-height: calc(70px + 2vw);    
     border-radius: 50%;
