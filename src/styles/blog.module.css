@@ -47,10 +47,6 @@
 }
 
 
-.title:hover {
-    font-size: calc(25px + 1vw);
-}
-
 .body {
     margin: 0;
 }
