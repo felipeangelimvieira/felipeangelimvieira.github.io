@@ -7,10 +7,10 @@ description: If I had to describe a Mondrian painting, I wouldn't remember its p
 
 If I had to describe a Mondrian painting, I wouldn't remember its pixels. Instead, I would suggest the position of the lines and the color of the rectangles. Describing it pixel by pixel would be such a unnecessary task - we can simply take the most important features and save memory space in our brains.
 
-In feature learning, we train machine learning models to extract meaningful features from data.  Given the complexity of an image, this is not an easy task. Guaranteeing that the model won't focus on details such as hair and freckles in a face depends heavily on the function we are optimizing.
-In autoencoders, for example, we minimize a pixelwise distance between the real and generated images. The model, therefore, captures minor details and doesn't prioritize the main content in an image.
+In feature learning, we train machine learning models to extract meaningful features from data.  Given the complexity of natural images, this is not an easy task. Guaranteeing that the model won't focus on details such as hair and freckles in a face depends heavily on the function we are optimizing.
+In autoencoders, for example, we minimize a pixelwise distance between the real and generated images. The model, therefore, captures minor details and doesn't prioritize the main content in images.
 
-Generative Adversarial Networks (GANs) have the potential to learn semantic features, as shown in [Adversarial Feature Learning](https://arxiv.org/pdf/1605.09782.pdf) paper in 2017. They offer the advantage of making no assumption about the structure or type of data to which they are applied.  The authors added an encoder to the vanilla GAN, forcing the discriminator to distinguish generator and encoder image-features pairs.
+Generative Adversarial Networks (GANs), on the other hand, have the potential to learn semantic features, as shown in [Adversarial Feature Learning](https://arxiv.org/pdf/1605.09782.pdf) paper in 2017. In this paper, the authors added an encoder to the vanilla GAN, forcing the discriminator to distinguish generator and encoder image-features pairs. GANs offer the advantage of making no assumption about the structure or type of data to which they are applied, leading to a more sophiscated feature extraction.
 
 ## The model
 
