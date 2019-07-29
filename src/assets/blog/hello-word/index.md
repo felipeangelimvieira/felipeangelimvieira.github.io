@@ -7,12 +7,12 @@ description: If I had to describe a Mondrian painting, I wouldn't remember its p
 
 If I had to describe a Mondrian painting, I wouldn't remember its pixels. Instead, I would suggest the position of the lines and the color of the rectangles. Describing it pixel by pixel would be such a unnecessary task - we can simply take the most important features and save memory space in our brains.
 
-In feature learning, we train machine learning models to extract meaningful features from data.  Given the complexity of natural images, this is not an easy task. Guaranteeing that the model won't focus on details such as hair and freckles in a face depends heavily on the function we are optimizing.
+In feature learning, we train machine learning models to extract meaningful features from data. They usually have semantic sense and are more compact than the original input - the lines and colors rather than the pixels of a Mondrian painting. Given the complexity of natural images, this is not an easy task. Guaranteeing that the model won't focus on details such as hair and freckles in a face depends heavily on the function we are optimizing.
 In autoencoders, for example, we minimize a pixelwise distance between the real and generated images. The model, therefore, captures minor details and doesn't prioritize the main content in images.
 
 Generative Adversarial Networks (GANs), on the other hand, have the potential to learn semantic features, as shown in [Adversarial Feature Learning](https://arxiv.org/pdf/1605.09782.pdf) paper in 2017. In this paper, the authors added an encoder to the vanilla GAN, forcing the discriminator to distinguish generator and encoder image-features pairs. GANs offer the advantage of making no assumption about the structure or type of data to which they are applied, leading to a more sophiscated feature extraction.
 
-## The model
+## The BiGAN model
 
 The network comprises three submodels: a generator G, an encoder E and a Discriminator D.
 The generator creates an image from a latent space, while the encoder learns how to invert G and project the images back into that space. The discriminator asserts if an image-feature pair comes from the generator or the encoder. 
