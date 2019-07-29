@@ -28,7 +28,7 @@ $$
  V(G,D) = \mathbb{E}_{x \sim p_X}[\log D(x)] + \mathbb{E}_{z \sim p_Z}[\log ( 1 - D(G(z)))]
 $$
 
-where x is an image input and z is the latent space vector, and p their respective distributions. We can interpret V as a measure of D accuracy. We optimize G and D through an adversarial objective $\min_{G} \max_{D}$ V(G,D). 
+where x is an image input and z is the latent space vector, and p their respective distributions. We can interpret V as a measure of D's accuracy. We optimize G and D through an adversarial objective $\min_{G} \max_{D}$ V(G,D). 
 
 The new bidirectional GAN loss proposed in the paper is:
 
@@ -46,7 +46,7 @@ First, the authors proved that the convergence occurs simultaneously for the enc
 
 > The BiGAN objective forces the encoder, in order to fool the discrimator at a particular z, to invert the generator at that z, such that E(G(z)) = z
 
-The authors also presented interesting empirical results. The BiGAN features extracted from E(x) are useful for classification tasks, and overcome a latent regressor when applied to complex datasets. For the MNIST, both performed similarly. The unsupervised encoder learnt filters similar to the ones of supervised models on ImageNet, and generalized well to detection and segmentation tasks too.
+The authors also presented interesting empirical results. The BiGAN features extracted from E(x) are useful for classification tasks, and overcome a latent regressor and D features when applied to complex datasets. For the MNIST, both performed similarly. The unsupervised encoder learnt filters similar to the ones of supervised models on ImageNet, and generalized well to detection and segmentation tasks too.
 
 
 ## References
