@@ -20,7 +20,7 @@ The generator creates an image from a latent space, while the encoder learns how
 ![Architecture image](architecture.png)
 
 The authors have also tested other tatics to extract features from the images, such as a latent regressor. This option, however, don't succeed as much as Bidirectional GAN when applied to complex datasets, such as ImageNet. They also point out that we can't use features from D.
-If G and E converge, D is not able to distinguish their results and don't learn meaningful intermediate representations.
+If G and E converge, D is not able to distinguish their results and doesn't learn meaningful intermediate representations.
 
 The original GAN loss function V is:
 
