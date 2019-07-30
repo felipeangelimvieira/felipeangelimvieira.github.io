@@ -25,7 +25,7 @@ If G and E converge, D is not able to distinguish their results and doesn't lear
 The original GAN loss function V is:
 
 $$
- V(G,D) = \mathbb{E}_{x \sim p_X}[\log D(x)] + \mathbb{E}_{z \sim p_Z}[\log ( 1 - D(G(z)))]
+ V(G,D) = \mathbb{E}_{x \sim p_X}[\log D(x)] \\ + \mathbb{E}_{z \sim p_Z}[\log ( 1 - D(G(z)))]
 $$
 
 where x is an image input and z is the latent space vector, and p their respective distributions. We can interpret V as a measure of D's accuracy. We optimize G and D through an adversarial objective $\min_{G} \max_{D}$ V(G,D). 

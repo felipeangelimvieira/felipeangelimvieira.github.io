@@ -26,7 +26,7 @@ class BlogIndex extends React.Component {
                                                       left: -15 + '%'}} 
                                                       src={shape}></img>
       <img className={styles.backgroundShape} style={{top: -15 + '%',
-                                                      right: -15 + '%'}} 
+                                                      right: 0 + '%'}} 
                                                       src={shapeRed}></img>
       <div className={styles.container}>
         <div className={styles.blankdiv}>

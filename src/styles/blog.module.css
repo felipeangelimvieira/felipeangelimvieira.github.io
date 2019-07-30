@@ -17,7 +17,8 @@
     width: calc(150px + 20vw);
     align-content: right;
     opacity: 0.1;
-    position:absolute;
+    position: absolute;
+    background-size: cover;
     overflow: hidden;
     z-index: -10;
 }
