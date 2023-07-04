@@ -3,7 +3,8 @@ site_name: My Docs
 theme:
   name: material
 
-  
+hooks:
+  - hooks.py
 
 plugins:
   - search
@@ -11,10 +12,6 @@ plugins:
   - exclude:
       glob:
         - notebooks/*
-  - mkdocs-simple-hooks:
-      hooks:
-        on_page_content: "docs_sources.plotly:convert_plotly"
-        on_post_build: "docs_sources.plotly:clean_search"
 
 
   #- mkdocs-jupyter:
@@ -31,11 +28,11 @@ plugins:
       #csl_file: "https://raw.githubusercontent.com/citation-style-language/styles/master/ieee.csl"
       #cite_inline: true
   
-  - nbconvert_custom:
-      input_dir: docs/blog
-      recursive: true
-      output_dir: notebooks
-      execute_enabled: false
+  #- nbconvert:
+  #    input_dir: docs/blog
+  #    recursive: true
+  #    output_dir: notebooks
+  #    execute_enabled: false
   
 markdown_extensions:
   - md_in_html

@@ -4,7 +4,6 @@ version = "0.1.1"
 description = ""
 authors = ["Felipe Angelim <felipe.angelim@mercadolivre.com>"]
 readme = "README.md"
-packages = [{from="app", include = "*"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -31,9 +30,6 @@ mkdocs-bibtex = "^2.11.0"
 pypandoc = "^1.11"
 python-markdown-math = "^0.8"
 mkdocs-exclude = "^1.0.2"
-
-[project.entry-points."mkdocs.plugins"]
-nbconvert_custom = "app.nbconvert:NbConvertPlugin"
 
 
 [build-system]
