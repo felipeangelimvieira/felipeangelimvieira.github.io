@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "felipeangelimvieira-github-io"
+version = "0.1.0"
+description = ""
+authors = ["felipeangelimvieira <felipeangelim@gmail.com>"]
+readme = "README.md"
+packages = [{include = "felipeangelimvieira"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+jupyter = "^1.1.1"
+pyyaml = "^6.0.2"
+pandas = "^2.2.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

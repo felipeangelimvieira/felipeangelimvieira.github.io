@@ -1,0 +1,18 @@
+---
+title: "About"
+image: profile.jpg
+about:
+  template: jolla
+  links:
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/felipe-angelim/
+    - icon: github
+      text: Github
+      href: https://github.com/felipeangelimvieira
+
+---
+
+Hey there. Here I talk about science, data, and other things. Opinions expressed are my own.
+
+Tech Lead @ Mercado Livre, Core Dev @ sktime (pro bono) and developer/creator of Prophetverse.
