@@ -1,29 +1,32 @@
 ---
-title: "Habits"
-author: "John Doe"
+title: "Prophetverse"
+author: "Felipe Angelim"
 format: revealjs
 ---
 
-# In the morning
+# Prophetverse 🔮
 
-## Getting up
+News!
 
-- Turn off alarm
-- Get out of bed
 
-## Breakfast
+```python
 
-- Eat eggs
-- Drink coffee
+from prophetverse.experimental.budget_optimization import (
+    BudgetOptimizer,
+    SharedBudgetConstraint,
+    MaximizeKPI,
+)
 
-# In the evening
+budget_optimizer = BudgetOptimizer(
+    objective=MaximizeKPI(),
+    constraints=[SharedBudgetConstraint()],
+)
 
-## Dinner
+X_opt = budget_optimizer.optimize(
+    model=model,
+    X=X,
+    horizon=pd.period_range("2025-06-01", "2025-06-30", freq="D"),
+    columns=["ad_spend_search", "ad_spend_social_media"],
+)
 
-- Eat spaghetti
-- Drink wine
-
-## Going to sleep
-
-- Get in bed
-- Count sheep
+```
