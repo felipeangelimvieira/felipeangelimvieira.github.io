@@ -1,6 +1,9 @@
 ---
 title: "Bayesian Inference - What, When, why, how?"
 image: thumbnail.png
+format:
+  html:
+    toc: true
 author: "Felipe Angelim"
 date: "2025-05-27"
 categories: [machine learning, bayesian inference]
@@ -8,7 +11,15 @@ jupyter: python3
 ---
 
 
-## Motivation
+```{python}
+# | echo: false
+import warnings
+
+warnings.filterwarnings("ignore")
+```
+
+
+## Bayesian and frequentist point of views
 
 Before we start, let's clarify the difference between two important concepts in statistics: **confidence intervals** and **credible intervals**.
 
@@ -92,16 +103,17 @@ plt.show()
 
 This subtle difference leads to difference answers, in some cases, and for a given question we should be careful to choose the right approach. Here are some questions that a credible interval may answer better:
 
-| # | Bayesian | Frequentist | Comments |
-|---|----------|-------------|----------|
-| 1 | “Given only three months of sales data for a brand-new SKU, how likely is it to exceed 1,000 units next quarter?” | "Based on three months of data, what is a 95 % prediction interval for next-quarter sales, and does that interval lie wholly above 1 000?" | The frequentist approach does not allow us to incorporate prior knowledge, or compute the average outstock. |
-* 
+| # | Bayesian | Frequentist |
+|---|----------|-------------|
+| 1 | “Given only three months of sales data for a brand-new SKU, how likely is it to exceed 1000 units next quarter?” | "Based on three months of data, how confident are we that we will sell more than 1000 units next quarter?" 
+
+The frequentist communicates the confidence on the experimental procedure / model ability to cover the true value in the confidence interval. The bayesian focus on the distribution of the parameter itself.
 
 ## Basics of Bayesian Inference
 
 In Bayesian Inference, we are
 interested in finding out the distribution $P(\theta|X)$ of our parameters $\theta$,
-given our data $X$. We consider that the parameters are random variables, where their distribution represent the amount of uncertainty we have on the. 
+given our data $X$. We consider that the parameters are random variables, because we always have some amount of uncertainty on their true values. 
 
 Bayesian inference derives from the simple Bayes' rule:
 
@@ -109,13 +121,13 @@ $$
 \underbrace{P(\theta|X)}_{\text{Posterior}} = \frac{P(X|\theta)P(\theta)}{P(X)}
 $$
 
-That, for all practical purposes, can be simplified to:
+That, for all practical purposes, we can ignore the denominator $P(X)$, called evidence, since it is constant and does not depend on our variable of interest $\theta$. Then, it can be simplified to:
 
 $$
  \underbrace{P(\theta|X)}_{\text{Posterior}} \propto \underbrace{P(X|\theta)}_{\text{Likelihood}} \underbrace{P(\theta)}_{\text{Prior}}
-$$
+$$ {#eq-bayes-propto}
 
-This "$\propto$" symbol indicates "proportional to", and proportionality is simpler, tractable and enough to find the posterior. We don't need to know the exact probability of $P(\theta|X)$ to estimate such distribution, as we will see, we need just to be able to answer how much a given parameter value is probable in comparison to other values. The denominator $P(X)$ serves as a normalization term, to guarantee that the posterior integrates to one,
+This "$\propto$" symbol indicates "proportional to", and proportionality is simpler and enough to find the posterior. We don't need to know the exact probability of $P(\theta|X)$ to estimate such distribution, as we will see, we need just to be able to answer how much a given parameter value is probable in comparison to other values. The denominator $P(X)$ serves as a normalization term, to guarantee that the posterior integrates to one,
 and since it is independent of $\theta$ - the quantity we are interested in - we can just ignore it.
 
 So, we can interpret each term as:
@@ -125,16 +137,18 @@ So, we can interpret each term as:
 * Posterior distribution $P(\theta|X)$: probability of the parameters, given the data. 
 
 
-This rule **connects** any prior belief one has about the parameters to what their distribution must be according to the data. Where either the prior or the likelihood is zero, the posterior probability is also zero. So the prior can also work to restrict the domain of our parameters.
+This rule **connects** any prior belief one has about a random variable $\theta$ to what their distribution must be according to the data. Where either the prior or the likelihood is zero, the posterior probability is also zero. So the prior can also work to restrict the domain of our parameters.
 
-An standard example is toin cossing. Let $\theta$, the parameter of our model, be the bias of a coin (probability of landing heads), and $X = (K,N)$ the number of heads and total trials.
+Consider a simple example of having a box with a certain proportion $\theta$ of red balls. We observe a dataset $X = (K,N)$, informing the number of red balls $K$ we draw after a total trials $N$.
 
-* The prior distribution should reflect our initial guesses of what the bias of the coin should be.
+![A box with red and blue balls, where the proportion of red balls is $\theta$](box.png){fig-align="center" width="30%"}
+
+* The prior distribution should reflect our initial guesses of what the share of red balls should be.
 The probability of landing heads should lie between 0 and 1 ($\theta \in (0, 1)$), and a natural
 choice of prior here is the [Beta distribution](https://en.wikipedia.org/wiki/Beta_distribution), that has its domain in this interval.
   
-* The likelihood is the mathematical rule that tells us how the world produces what we see. **It’s the bridge between theory and observation**. For a toin coss, a natural rule to describe the number
-of heads $X$  is binomial distribution:
+* The likelihood is the mathematical rule that tells us how the world produces what we see. **It’s a function of parameters, mapping them to the distribution of observations**. For sequence of draws, a natural rule to describe the number
+of red balls and total draws is binomial distribution:
 
 $$
 X|\theta \sim \text{Binomial}(n, k) = \binom{n}{k} \,p^k (1-p)^{\,n-k}
@@ -159,10 +173,10 @@ Note how, for $Beta(1,1)$, the prior is uniform. This means that we have no prio
 jStat = require("jStat@latest")
 
 // Cell 2: Interactive parameter ranges (Inputs is preloaded)
-viewof alpha = Inputs.range([1, 20], {step: 1, value: 1, label: "Alpha (α)"});
-viewof beta  = Inputs.range([1, 20], {step: 1, value: 1, label: "Beta (β)"});
+viewof alpha = Inputs.range([1, 20], {step: 1, value: 1, label: "Prior parameter Alpha (α)"});
+viewof beta  = Inputs.range([1, 20], {step: 1, value: 1, label: "Prior parameter Beta (β)"});
 viewof n     = Inputs.range([1, 200], {step: 1, value: 100, label: "Trials (n)"});
-viewof k     = Inputs.range([0, n],    {step: 1, value: 60, label: "Heads (k)"});
+viewof k     = Inputs.range([0, n],    {step: 1, value: 60, label: "Red balls (k)"});
 
 // Cell 3: Compute θ grid and densities (Plot is preloaded)
 thetaValues = Array.from({length: 200}, (_, i) => i / 199);
@@ -193,15 +207,403 @@ Plot.plot({
 });
 ```
 
-### Untractable posteriors 
+### Approximating posterior from data
 
 In other situations (most of them), developing the equations does not lead to an analytical solution.
 In such cases, we can use alternative methods to approximate the posterior distribution.
 
+There is a spectrum of methods to approximate the posterior distribution, from point estimates to sampling methods. Here are some of the most common ones, from "most bayesian" to "least bayesian":
+
+
+1. **Markov Chain Monte Carlo (MCMC)**: by using the unnormalized posterior in equation @eq-bayes-propto, we can sample many instances of $\{\theta_i\}_{i=1}^K$ with probabilities proportional to their true posterior probabilities. The result of the estimation is a set of samples that simulate samples from the true posterior, and can be used to compute the mean, percentile or any quantity of interest.
+
+2. **Variational Inference (VI)**: since the true posterior distribution may be hard to compute, we can use another simpler candidate distribution, and seek the parameters of this approximate distribution that minimize the distance to the true posterior. This is often done by minimizing the Kullback-Leibler divergence between the true posterior and the approximate distribution. The result are parameters of the candidate distribution, that can be used to sample sets of parameters and compute the mean, percentiles or any quantity of interest. This is often faster than MCMC, but may not capture the true posterior distribution as well as MCMC intends to.
+
+3. **Maximum A Posteriori (MAP)**: this is a point estimate of the posterior distribution, which finds the mode (maximum) of the posterior distribution. It is often faster and easier to compute than the full posterior distribution.
+
+
+
+#### Markov Chain Monte Carlo (MCMC)
+
+Estimating the full posterior distribution, and not single point, turns out to be extremely useful when we want to measure risks and other quantities. This is where MCMC comes in. MCMC is based on two key ideas: Markov Chains and Monte Carlo methods. 
+
+Markov chains are random sequences of states $\{S_i\}$, with a given transition probability  $T(S_{i+1}|S_i)$ between them. These transitions have the mandatory property of not depending on the history of the chain, and only on the current observation. They are memory-less.
+
+These random sequences can have an interesting property of **stationary distributions**. In other words, these sequences can have as an equilibrium a certain distribution $p$, so that, if the sequence starts at $p$, future values are also drawn according to the probability $p$. What if we could build a Markov chain that has as stationary distribution the posterior distribution we are interested in? This is the key idea of MCMC.
+
+The MCMC basically designs a Markov Chain that have as stationary distribution the distribution of interest: our posterior $P(\theta|X)$.
+The name Monte Carlo comes from the famous casinos in Monaco, and its basic idea is that by using random samples we can approximate some quantity of interest.
+
+Consider the example below, where we sample many times from a beta distribution. With more and more samples randomly draw from it, our approximation quality increases, and the histogram starts to look more like the true distribution.
+
+```{python}
+# | echo: False
+
+from IPython.display import HTML
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from scipy.stats import beta as beta_dist  # only for drawing the reference PDF
+
+# -------------------------------------------------
+# 1. Draw “MCMC” samples
+# -------------------------------------------------
+np.random.seed(42)
+n_samples = 100  # total samples to show
+samples = np.random.beta(2, 5, n_samples)
+
+# Fixed histogram binning
+bins = np.linspace(0, 1, 31)  # 30 equal-width bins
+bin_width = bins[1] - bins[0]
+
+# Reference Beta(2,5) PDF for comparison
+x_pdf = np.linspace(0, 1, 500)
+pdf_true = beta_dist.pdf(x_pdf, 2, 5)
+
+# -------------------------------------------------
+# 2. Set up the figure & artists
+# -------------------------------------------------
+fig, ax = plt.subplots()
+
+# Empty placeholders; artists are updated in `update`
+bars = ax.bar(
+    bins[:-1],
+    np.zeros(len(bins) - 1),
+    width=bin_width,
+    align="edge",
+    alpha=0.6,
+    label="Empirical histogram",
+)
+(line_pdf,) = ax.plot([], [], "k--", lw=2, label="True Beta(2,5) PDF")
+(point,) = ax.plot([], [], "ro", label="Current sample")
+
+
+def init():
+    """Initialize empty frame."""
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 8)
+    ax.set_xlabel("θ")
+    ax.set_ylabel("Density")
+    ax.set_title("Building a posterior via samples")
+    ax.legend(loc="upper right")
+    # Pre-draw the true PDF once (static)
+    line_pdf.set_data(x_pdf, pdf_true)
+    return (*bars, line_pdf, point)
+
+
+# -------------------------------------------------
+# 3. Animation callback
+# -------------------------------------------------
+def update(frame):
+    """
+    At every frame `frame`, use the first `frame + 1` samples
+    to update the histogram and mark the latest draw.
+    """
+    current = samples[: frame + 1]
+
+    # Update histogram heights
+    counts, _ = np.histogram(current, bins=bins, density=True)
+    for rect, h in zip(bars, counts):
+        rect.set_height(h)
+
+    # Move the red point to the newest sample
+    point.set_data([samples[frame]], [0])  # at density 0 for visibility
+
+    ax.set_title(f"Samples shown: {frame + 1} / {n_samples}")
+    return (*bars, point)
+
+
+# -------------------------------------------------
+# 4. Create & display the animation
+# -------------------------------------------------
+ani = FuncAnimation(
+    fig,
+    update,
+    frames=n_samples,
+    init_func=init,
+    interval=10,  # milliseconds between frames
+    blit=True,
+    repeat=False,
+)
+plt.close()  # avoid duplicate static
+
+HTML(ani.to_jshtml())
+```
+
+In a nutshell, Monte Carlo methods leverage the randomness to approximate functions of a random distribution.
+
+Breaking down the name, Monte Carlo is similar to trial and error methods, seasoned with randomness; Markov Chain means we are
+interested in sequences of random variables, where the next variable in the sequence depends only on the current one, not on the previous ones. Basically, if we could reduce MCMC explanation to few words, we could say that MCMC tries to take a lot of samples from $P(\theta|X)$, based on trial and error, and the accepted samples will be the posterior distribution. MCMC comes in different flavours: Metropolis-Hastings, Gibbs sampling, Hamiltonian Monte Carlo, etc. The key idea is that we can generate samples from the posterior distribution by constructing a Markov chain that has the desired distribution as its equilibrium distribution.
+
+##### Metropolis Hasting algorithm
+
+
+```{python}
+# | echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from IPython.display import HTML, display
+
+
+# ------------------------------------------------------------------
+# Helper distributions and MH kernel
+# ------------------------------------------------------------------
+class Distribution:
+    def log_prob(self, value):
+        raise NotImplementedError
+
+    def sample(self, size=1):
+        raise NotImplementedError
+
+
+class Uniform(Distribution):
+    def __init__(self, lower, upper):
+        self.lower, self.upper = lower, upper
+
+    def log_prob(self, value):
+        value = np.asarray(value)
+        probs = ((value >= self.lower) & (value <= self.upper)).astype(float) / (
+            self.upper - self.lower
+        )
+        return np.sum(np.log(probs, where=probs > 0, out=np.full_like(probs, -np.inf)))
+
+    def sample(self, size=1):
+        return np.random.uniform(self.lower, self.upper, size=size)
+
+
+class Bernoulli(Distribution):
+    def __init__(self, p):
+        self.p = p
+
+    def log_prob(self, value):
+        value = np.asarray(value)
+        return np.sum(value * np.log(self.p) + (1 - value) * np.log(1 - self.p))
+
+    def sample(self, size=1):
+        return np.random.binomial(1, self.p, size=size)
+
+
+class MetropolisHasting:
+    def __init__(self, num_samples, num_warmup, step_size=0.1):
+        self.num_samples, self.num_warmup, self.step_size = (
+            num_samples,
+            num_warmup,
+            step_size,
+        )
+
+    def _transition(self, x):
+        return x + np.random.normal(0, self.step_size)
+
+    def run(self, data, prior, model_cls, p0=None):
+        N = self.num_samples + self.num_warmup
+        samples = np.full(N, np.nan)
+        accepted = np.zeros(N, dtype=int)
+        cur = prior.sample()[0] if p0 is None else p0
+        samples[0] = cur
+        for i in range(1, N):
+            cand = self._transition(cur)
+            logp_cur = prior.log_prob(cur) + model_cls(cur).log_prob(data)
+            logp_cand = prior.log_prob(cand) + model_cls(cand).log_prob(data)
+            if np.log(np.random.uniform()) <= logp_cand - logp_cur:
+                cur = cand
+                if i >= self.num_warmup:
+                    accepted[i] = 1
+            samples[i] = cur
+        return samples, accepted
+
+
+# ------------------------------------------------------------------
+# Run the sampler
+# ------------------------------------------------------------------
+np.random.seed(42)
+data = np.random.binomial(1, 0.2, size=50)
+mh = MetropolisHasting(num_samples=250, num_warmup=25, step_size=0.1)
+samples, accept = mh.run(data, prior=Uniform(0, 1), model_cls=Bernoulli, p0=0.6)
+
+# ------------------------------------------------------------------
+# Colors for accepted/rejected
+# ------------------------------------------------------------------
+col_rej = "red"
+col_acc = "blue"
+
+# ------------------------------------------------------------------
+# One figure, two axes, shared y‐axis
+# ------------------------------------------------------------------
+fig, (ax_trace, ax_hist) = plt.subplots(ncols=2, sharey=True, figsize=(12, 5))
+
+# Trace axis
+ax_trace.set_xlim(0, len(samples))
+ax_trace.set_ylim(0, 1)
+ax_trace.set_xlabel("Iteration")
+ax_trace.set_ylabel("Sample value")
+ax_trace.set_title("Trace (accepted vs rejected)")
+sc_rej = ax_trace.plot(
+    [], [], marker="x", linestyle="none", color=col_rej, alpha=0.4, label="Rejected"
+)[0]
+sc_acc = ax_trace.plot(
+    [], [], marker="o", linestyle="none", color=col_acc, alpha=0.6, label="Accepted"
+)[0]
+ax_trace.axhline(
+    0.2, linestyle="--", linewidth=1, color="black", alpha=0.7, label="Ground-truth p"
+)
+ax_trace.legend()
+
+# Histogram axis
+ax_hist.set_xlabel("Frequency")
+ax_hist.set_title("Histogram up to current step")
+ax_hist.set_xlim(0, None)  # autoscale x‐axis
+# y‐limits inherited from sharey
+
+
+# ------------------------------------------------------------------
+# Animation setup (faster: interval=20ms)
+# ------------------------------------------------------------------
+def init():
+    sc_rej.set_data([], [])
+    sc_acc.set_data([], [])
+    ax_hist.cla()
+    ax_hist.set_xlabel("Frequency")
+    ax_hist.set_title("Histogram up to current step")
+    return sc_rej, sc_acc
+
+
+def update(frame):
+    xs = np.arange(frame + 1)
+    ys = samples[: frame + 1]
+    mask = accept[: frame + 1].astype(bool)
+
+    # trace update
+    sc_acc.set_data(xs[mask], ys[mask])
+    sc_rej.set_data(xs[~mask], ys[~mask])
+
+    # histogram update
+    ax_hist.cla()
+    ax_hist.set_xlabel("Frequency")
+    ax_hist.set_ylim(0, 1)
+    ax_hist.set_title("Histogram up to current step")
+    ax_hist.hist(
+        ys[mask],
+        bins=10,
+        orientation="horizontal",
+        alpha=0.6,
+        density=True,
+        color=col_acc,
+        label="Accepted",
+    )
+
+    ax_hist.legend(loc="upper right")
+
+    return sc_rej, sc_acc, *ax_hist.patches
+
+
+anim = FuncAnimation(
+    fig, update, init_func=init, frames=len(samples), interval=5, blit=False
+)
+
+# Display inline
+# display(HTML(anim.to_jshtml()))
+
+
+# Optional: save as GIF
+anim.save("mh_accepted_rejected_fast.gif", writer="pillow", fps=30)
+plt.close()
+
+```
+
+![Metropolis Hasting](mh_accepted_rejected_fast.gif)
+
+## Variational Inference
+
+```{python}
+# | echo: False
+
+# Warning, this is not a true VI!
+from IPython.display import HTML
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from scipy.stats import beta as beta_dist
+
+# --------------------------------------------------
+# 1.  True posterior:  p(θ | y) = Beta(2, 5)
+# --------------------------------------------------
+alpha_true, beta_true = 2.0, 5.0
+theta = np.linspace(0, 1, 400)
+posterior = beta_dist.pdf(theta, alpha_true, beta_true)
+posterior /= posterior.max()  # scale peak to 1 for tidy overlay
+
+# --------------------------------------------------
+# 2.  Variational family:  q(θ) = Beta(α, β)  (start broad & flat)
+# --------------------------------------------------
+alpha_q, beta_q = 0.5, 0.5  # initial guess
+lr = 0.10  # learning-rate-ish factor
+n_iter = 60  # animation frames
+
+# --------------------------------------------------
+# 3.  Matplotlib figure and empty artists
+# --------------------------------------------------
+fig, ax = plt.subplots()
+(line_post,) = ax.plot(theta, posterior, lw=2, label="True Beta(2, 5)")
+(line_q,) = ax.plot([], [], lw=2, label="Variational q(θ)")
+(point,) = ax.plot([], [], "ro", label="q mean")
+
+
+def init():
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1.05)
+    ax.set_xlabel(r"$\theta$")
+    ax.set_ylabel("Density (scaled)")
+    ax.set_title("Variational inference: q(θ)=Beta(α,β) → Beta(2,5)")
+    ax.legend()
+    return line_post, line_q, point
+
+
+# --------------------------------------------------
+# 4.  Update rule (simple exponential approach)
+# --------------------------------------------------
+def update(frame):
+    global alpha_q, beta_q
+
+    # toy “natural-gradient” step: move a fraction toward the target α*, β*
+    alpha_q += lr * (alpha_true - alpha_q)
+    beta_q += lr * (beta_true - beta_q)
+
+    # recompute q density
+    q_density = beta_dist.pdf(theta, alpha_q, beta_q)
+    q_density /= q_density.max()  # scale for overlay
+    line_q.set_data(theta, q_density)
+
+    # mark the variational mean
+    mean_q = alpha_q / (alpha_q + beta_q)
+    point.set_data([mean_q], [0])  # at baseline for clarity
+
+    ax.set_title(f"Iter {frame+1}/{n_iter}   α={alpha_q:.2f}, β={beta_q:.2f}")
+    return line_q, point
+
+
+ani = FuncAnimation(
+    fig,
+    update,
+    frames=n_iter,
+    init_func=init,
+    interval=100,  # ms between frames
+    blit=True,
+    repeat=False,
+)
+plt.close()  # prevent duplicate static plot
+HTML(ani.to_jshtml())
+```
+
+##### Metropolis-Hastings (MH) algorithm
+
+It is easy to build the MH algorithm from scratch, and useful to understand the basics of MCMC. Let's separate the initialization and the sampling steps:
+
 
 #### Maximum A Posteriori (MAP)
 
-The Maximum A Posteriori (MAP) estimate is the mode of the posterior distribution: the value of $\theta$ that maximizes the posterior probability density function.
+The Maximum A Posteriori (MAP) estimate is the mode of the posterior distribution: the value of $\theta$ that maximizes the posterior probability density function. Because it does not compute the entire distribution over $\theta$, and just the most probable value according to the posterior, it is often faster and easier to compute than the full posterior distribution.
 
 
 ```{python}
@@ -255,11 +657,12 @@ def update(frame):
 
 
 ani = FuncAnimation(fig, update, frames=4, init_func=init, blit=True, repeat=False)
+
 plt.close()
 HTML(ani.to_jshtml())
 ```
 
-Although not a true bayesian inferece, MAP can provide us point estimates that balance the prior and likelihood. The posterior $P(\theta|X)$  is treated as a function whose maximum we want to find, and
+Although not a "true" bayesian inferece, MAP can provide us point estimates that balance the prior and likelihood. The posterior $P(\theta|X)$  is treated as a function whose maximum we want to find, and
 due to amazing libraries such as numpyro, and jax, we
 can leverage autodiff to compute the gradient of the posterior, and rapidly estimate it.
 
@@ -318,17 +721,14 @@ HTML(ani.to_jshtml())
 The **Maximum Likelihood Estimate (MLE)** would be a frequentist approach similar to MAP, but, in this case, we completely ignore the prior, and optimize the likelihood function. In this sense, you can think of
 MAP as a regularized version of MLE, where the prior acts as a regularization term.
 
-Indeed, in many cases, **the MAP estimate is equivalent to the MLE estimate with a regularization term!**. For example, the famous Ridge and Lasso regressions, that penalize coefficients far from zero, can be seen as MAP estimates with Gaussian and Laplace priors centered on zero, respectively. As the parameter value increases in magnitude, the prior reduces the posterior probability, effectively penalizing large coefficients. This implies that another way to see such regression methods in application of your prior beliefs about the parameters being close to zero.
 
-#### Markov Chain Monte Carlo (MCMC)
+::: {.callout-tip}
 
-MAP provides a point estimate, but we may be
-interested in the whole posterior distribution, not just a single point, to be
-able to measure risks and other quantities. However, the posterior distribution maybe impossible to compute analitically. This is where MCMC comes in. 
+## Don't be afraid of priors! You may be already using them :)
 
-Breaking down the name, Monte Carlo is similar to trial and error methods, seasoned with randomness; Markov Chain means we are
-interested in sequences of random variables, where the next variable in the sequence
-depends only on the current one, not on the previous ones. Basically, if we could reduce MCMC explanation to few words, we could say that MCMC tries to take a lot of samples from $P(\theta|X)$, based on trial and error, and the accepted samples will be the posterior distribution.****
+In many cases, **the MAP estimate is equivalent to the MLE estimate with a regularization term!** For example, the famous Ridge and Lasso regressions, that penalize coefficients far from zero, can be seen as MAP estimates with Gaussian and Laplace priors centered on zero, respectively. As the parameter value increases in magnitude, the prior reduces the posterior probability, effectively penalizing large coefficients. This implies that another way to see such regression methods in application of your prior beliefs about the parameters being close to zero.
+
+:::
 
 ## Why?
 
@@ -346,7 +746,20 @@ something bayesian. We could also create a gradient of "how" bayesian
 
 
 
+## Hierarchical bayesian models
 
 *This blog post is based on a talk presented at Galp. This post is not meant to be seen as part of "bayesian vs frequentist" rivalry.
 I aim to point at some examples of problems where bayesian methodologies can better answer the business **questions** and provide extra insights, that similar frequentist methods maybe also could, but not in a natural or easy way as with
 bayesian logic.*
+
+
+
+### Reasons to study bayesian inference
+
+Given that we now understand the different point of views, I can list another reasons to why to study bayesian inference:
+
+1. **Regularization**: Bayesian inference provides a natural way to regularize models through priors, which can help prevent overfitting, especially in cases with limited data. In addition to that, seeing regularization as a prior belief on the parameters can be much more natural and intuitive, often making it easier to communicate with stakeholders about your hypotheses and assumptions.
+2. **It is a natural way to define probabilistic models**, where we can incorporate uncertainty in our estimates and predictions. In timeseries forecasting, customer lifetime value estimation, and many other applications, we can construct probabilistic models that naturally incorporate uncertainty and provide a distribution of possible outcomes, rather than just point estimates. This is particularly useful in business applications where understanding the range of possible outcomes is crucial for decision-making.
+   
+3. **We can easily extend our results and compute any function $g(\theta)$ of our estimates**: by using samples from the posterior, we can compute any function of the parameters, such as risk measures, quantiles, or any other transformation of the parameters. For example, you may forecast the posterior the number of sales in day, but easily compute the posterior of the cumulative sales in the next 30 days, or the risk of not reaching a certain sales target.
+
