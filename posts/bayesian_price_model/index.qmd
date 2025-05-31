@@ -1,0 +1,273 @@
+---
+title: "Hierarchical Bayesian Modeling of Willingness to Pay"
+image: thumbnail.png
+format:
+    html:
+        toc: true
+        toc-depth: 4
+        toc-expand: 4
+author: "Felipe Angelim"
+date: "2025-05-29"
+categories: [machine learning, bayesian inference]
+jupyter: python3
+---
+
+## Motivation
+
+In real-world scenarios such as pricing experiments, different groups or regions often exhibit unique behaviors. For example, customers from different regions and age groups may be willing to pay different prices for a given product.
+However, datasets can be imbalanced, and some segments may have significantly fewer observations than others. This imbalance can lead to unreliable estimates of group-specific behaviors if we model each region independently. Bayesian hierarchical models offer an elegant solution by effectively "borrowing strength" across groups, resulting in better-informed inferences even for underrepresented groups.
+
+In this post, we will infer the Willingness-to-pay (WTP) curve of customers using a Bayesian hierarchical model. We will:
+
+1. **Simulate** an imbalanced dataset representing customer purchase decisions across four groups (regions). This will represent an experiment a company might run to understand how different customer segments respond to price changes.
+2. **Defining a Bayesian hierarchical model** to capture region-specific purchase behaviors. The model will leverage shared hyperpriors to account for similarities across regions while allowing for individual differences.
+3. **Visualizing** estimated purchase-probability curves alongside the true curves, including credible intervals.
+4. **Comparing** the hierarchical model to a no-pooling model that fits each region independently.
+
+## 1. Simulating Imbalanced region Data
+
+We simulate a dataset of 400 purchase decision samples distributed unevenly across four regions. This data could be coming from a survey conducted with current clients, to analyze how much they would pay to change their subscription or product to new option. Specifically, region 4 has significantly fewer observations, representing realistic data imbalance.
+
+```{python}
+# | code-fold: true
+# | code-summary: "Show the code for generating imbalanced region data"
+import jax
+import jax.numpy as jnp
+import numpy as np
+import numpyro
+import numpyro.distributions as dist
+from numpyro.infer import MCMC, NUTS, Predictive
+import matplotlib.pyplot as plt
+import pandas as pd
+
+numpyro.enable_x64()
+plt.style.use("seaborn-v0_8-whitegrid")
+
+# ---------- Simulated data (with imbalanced regions) ----------
+key = jax.random.PRNGKey(0)
+# split the key so we get fresh randomness for price, region, and labels
+key, key_price, key_region, key_y = jax.random.split(key, 4)
+
+n_regions, n_obs = 4, 400
+true_p50 = jnp.array([10.0, 12.0, 9.0, 15.0])
+true_n = jnp.array([2.0, 1.8, 2.5, 1.6]) * 4
+
+# 1) sample prices as before
+price = jax.random.uniform(key_price, (n_obs,), minval=0.0, maxval=20.0)
+
+# 2) define region probabilities (last region only 5%)
+region_probs = jnp.array([0.3, 0.3, 0.35, 0.05])
+region_idx = jax.random.choice(
+    key_region, jnp.arange(n_regions), shape=(n_obs,), p=region_probs
+)
+
+# 3) generate “true” purchase probabilities and observations
+p_true = 1 / (1 + (price / true_p50[region_idx]) ** true_n[region_idx])
+y = dist.Bernoulli(probs=p_true).sample(key_y)
+
+
+```
+
+```{python}
+pd.DataFrame(
+    data={"y" : y, "region_idx" : region_idx}
+)
+```
+
+## 2. Defining the Bayesian Hierarchical Model
+
+Our hierarchical Bayesian model allows each region to have its own logistic-like purchase probability curve. Each region-specific curve is defined by two parameters:
+
+* **`p50`**: Price at which the purchase probability is 50%.
+* **`slope`**: Controls the steepness of the curve.
+
+These parameters vary across regions and are drawn from hyperpriors, capturing similarities and differences across groups.
+
+```{python}
+import numpyro
+import numpyro.distributions as dist
+import jax.numpy as jnp
+
+
+def model(price, region, n_regions=4, y=None):
+    N = len(price)
+
+    # Hyperpriors for variability among regions
+    sigma_slope = numpyro.sample("sigma_slope", dist.HalfNormal(1000.0))
+    sigma_p50 = numpyro.sample("sigma_p50", dist.HalfNormal(20.0))
+
+    with numpyro.plate("regions", n_regions):
+        slope_i = numpyro.sample("mu_i", dist.HalfNormal(sigma_slope))
+        p50_i = numpyro.sample("p50_i", dist.HalfNormal(sigma_p50))
+
+    slopes = numpyro.deterministic("slopes", jnp.log1p(slope_i))
+    p50s = numpyro.deterministic("p50s", p50_i)
+
+    p = 1 / (1 + (price / p50s[region]) ** slopes[region])
+    numpyro.deterministic("p", p)
+
+    with numpyro.plate("observations", N):
+        numpyro.sample("obs", dist.Bernoulli(probs=p), obs=y)
+```
+
+```{python}
+
+model_args = (price, region_idx, n_regions, y)
+numpyro.render_model(model, model_args=(price, region_idx, n_regions, y))
+```
+
+## 3. Running Bayesian Inference
+
+We use the No-U-Turn Sampler (NUTS) provided by NumPyro to infer the posterior distributions of our model parameters:
+
+```{python}
+import jax
+from numpyro.infer import MCMC, NUTS
+
+# Inference using NUTS
+key, k_mcmc, _ = jax.random.split(key, 3)
+
+nuts = NUTS(model)
+mcmc = MCMC(nuts, num_warmup=1000, num_samples=2000, num_chains=4)
+mcmc.run(k_mcmc, price=price, region=region_idx, n_regions=n_regions, y=y)
+mcmc.print_summary()
+samples = mcmc.get_samples()
+```
+
+## 4. Visualizing Posterior Estimates
+
+We visualize the posterior mean and 95% credible intervals of the purchase probability for each region, alongside the true underlying probability curves:
+
+```{python}
+# Visualizing posterior predictions
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Extract posterior samples
+p50s = np.array(samples["p50s"])
+slopes = np.array(samples["slopes"])
+
+# Define price grid for predictions
+price_grid = np.linspace(0, 20, 200)
+n_samples, n_regions = p50s.shape
+
+# Compute predictive curves
+prob_samples = np.empty((n_samples, n_regions, price_grid.size))
+for i in range(n_samples):
+    ratio = price_grid[None, :] / p50s[i][:, None]
+    prob_samples[i] = 1 / (1 + ratio ** slopes[i][:, None])
+
+# Posterior summary
+mean_p = prob_samples.mean(axis=0)
+low_p = np.quantile(prob_samples, 0.025, axis=0)
+high_p = np.quantile(prob_samples, 0.975, axis=0)
+
+# True curves (known from simulation)
+true_curves = np.vstack(
+    [1 / (1 + (price_grid / tp50) ** tn) for tp50, tn in zip(true_p50, true_n)]
+)
+
+# Plotting
+cmap = plt.get_cmap("tab10")
+colors = [cmap(i) for i in range(n_regions)]
+
+plt.figure(figsize=(10, 6))
+for c, color in enumerate(colors):
+    plt.plot(price_grid, mean_p[c], color=color, label=f"region {c} (Estimated)")
+    plt.fill_between(price_grid, low_p[c], high_p[c], color=color, alpha=0.3)
+    plt.plot(
+        price_grid,
+        true_curves[c],
+        linestyle="--",
+        linewidth=2,
+        color=color,
+        label=f"region {c} (True)",
+    )
+
+plt.xlabel("Price")
+plt.ylabel("Purchase Probability")
+plt.title(
+    "Estimated vs. True Purchase Probability by region \n with 95% Credible Intervals"
+)
+plt.legend(loc="center right", bbox_to_anchor=(1.3, 0.5))
+plt.tight_layout()
+plt.show()
+```
+
+## 5. Comparison to a No-Pooling Model
+
+To illustrate the benefits of hierarchical pooling, we now fit a **no-pooling** model that treats each region entirely independently. Each region has its own separate prior on `p50` and `slope`, without sharing information across groups.
+
+```{python}
+import numpyro
+import numpyro.distributions as dist
+import jax.numpy as jnp
+
+
+def model_no_pool(price, region, n_regions=4, y=None):
+    # Independent priors per region (no hyperpriors)
+    with numpyro.plate("regions", n_regions):
+        slope_i = numpyro.sample("slope_i", dist.HalfNormal(1000.0))
+        p50_i = numpyro.sample("p50_i", dist.HalfNormal(20.0))
+
+    p = 1 / (1 + (price / p50_i[region]) ** slope_i[region])
+    with numpyro.plate("observations", len(price)):
+        numpyro.sample("obs", dist.Bernoulli(probs=p), obs=y)
+
+
+# Run inference for no-pooling model
+gpus = None  # adjust as needed
+nuts_np = NUTS(model_no_pool)
+mcmc_np = MCMC(nuts_np, num_warmup=1000, num_samples=2000, num_chains=4)
+key, k_np = jax.random.split(key)
+mcmc_np.run(k_np, price=price, region=region_idx, n_regions=n_regions, y=y)
+samples_np = mcmc_np.get_samples()
+```
+
+Next, we extract posterior curves for the no-pooling model and visualize them alongside the hierarchical estimates:
+
+```{python}
+# Predictive curves for no-pooling
+p50_np = np.array(samples_np["p50_i"])
+slope_np = np.array(samples_np["slope_i"])
+n_samples = p50_np.shape[0]
+
+prob_np = np.empty((n_samples, n_regions, price_grid.size))
+for i in range(n_samples):
+    ratio_np = price_grid[None, :] / p50_np[i][:, None]
+    prob_np[i] = 1 / (1 + ratio_np ** slope_np[i][:, None])
+
+mean_np = prob_np.mean(axis=0)
+low_np  = np.quantile(prob_np, 0.025, axis=0)
+high_np = np.quantile(prob_np, 0.975, axis=0)
+```
+
+```{python}
+# Plot comparison: region-wise subplot comparison including true curves
+fig, axes = plt.subplots(2, 2, figsize=(12, 8), sharex=True, sharey=True)
+axes = axes.flatten()
+for c, ax in enumerate(axes):
+    # True underlying curve
+    ax.plot(price_grid, true_curves[c], color="black", linewidth=3, label="True")
+    # Hierarchical model
+    ax.plot(price_grid, mean_p[c], color=colors[c], label="Hierarchical")
+    ax.fill_between(price_grid, low_p[c], high_p[c], color=colors[c], alpha=0.3)
+    # No-pooling model (constant color)
+    ax.plot(price_grid, mean_np[c], color="gray", linestyle="--", label="No-Pooling")
+    ax.fill_between(price_grid, low_np[c], high_np[c], color="gray", alpha=0.2)
+    ax.set_title(f"region {c}")
+    ax.set_xlabel("Price")
+    ax.set_ylabel("Purchase Probability")
+    ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+**Key observations**:
+
+* For well-sampled regions (e.g., regions 0, 1, 2), both models give similar posterior means, but the hierarchical model shows tighter credible intervals due to partial pooling.
+* For the underrepresented region (region 3), the no-pooling model's credible band is much wider and more variable, reflecting high uncertainty when data are scarce. In contrast, the hierarchical model borrows strength from other regions, yielding a more stable estimate.
+
+## Conclusion
+
+This analysis demonstrates the robustness of Bayesian hierarchical modeling in situations with imbalanced datasets. By leveraging shared hyperpriors, even regions with limited data can yield reliable inferences. In contrast, a no-pooling approach, while valid, suffers from high variance for underrepresented groups. Hierarchical models are essential tools in fields where understanding subgroup behavior under uncertainty is critical.

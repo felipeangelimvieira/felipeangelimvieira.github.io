@@ -4,12 +4,18 @@ image: thumbnail.png
 format:
   html:
     toc: true
+    toc-depth: 4
+    toc-expand: 4
 author: "Felipe Angelim"
 date: "2025-05-27"
 categories: [machine learning, bayesian inference]
 jupyter: python3
 ---
 
+Two reasons to know and use bayesian inference:
+
+* **Probabilistic programming is powerful, and bayesian inference provides a solid foundation for it**. It is the basis of many probabilistic programming libraries, such as [PyMC](https://docs.pymc.io/), [NumPyro](https://num.pyro.ai/en/stable/), and [TensorFlow Probability](https://www.tensorflow.org/probability). 
+* **Regularization**. Machine learning is about balancing the correct amount of regularization to avoid overfitting. Bayesian inference provides a principled way to do this, by using priors to regularize the model.
 
 ```{python}
 # | echo: false
@@ -19,7 +25,7 @@ warnings.filterwarnings("ignore")
 ```
 
 
-## Bayesian and frequentist point of views
+## Bayesian and frequentist intervals
 
 Before we start, let's clarify the difference between two important concepts in statistics: **confidence intervals** and **credible intervals**.
 
@@ -146,6 +152,10 @@ Consider a simple example of having a box with a certain proportion $\theta$ of 
 * The prior distribution should reflect our initial guesses of what the share of red balls should be.
 The probability of landing heads should lie between 0 and 1 ($\theta \in (0, 1)$), and a natural
 choice of prior here is the [Beta distribution](https://en.wikipedia.org/wiki/Beta_distribution), that has its domain in this interval.
+
+$$
+\theta \sim Beta(\alpha, \beta)
+$$
   
 * The likelihood is the mathematical rule that tells us how the world produces what we see. **It’s a function of parameters, mapping them to the distribution of observations**. For sequence of draws, a natural rule to describe the number
 of red balls and total draws is binomial distribution:
@@ -156,13 +166,16 @@ $$
 
 * The posterior will be our final belief on the values of $\theta$. It will reflect both the prior belief and the likelihood of the data.
 
+$$
+\theta|X \sim \text{Binomial}(n, k) \cdot Beta(\alpha, \beta)
+$$ {#eq-bayes-box}
 
-For some situations, we can analitically compute the posterior distribution, by replacing the likelihood and prior in Bayes' rule equation. This coin-toss example is one of them, so we can easily build an interactive tools to visualize it.
 
+For some situations, we can analitically compute the posterior distribution, by replacing the likelihood and prior in Bayes' rule equation. This bernoulli-beta example is one of them. The posterior is a Beta distribution with parameters $\text{Beta}(\alpha + k, \beta + (n - k))$, where $k$ is the number of red balls observed, and $n$ is the total number of draws.
 
 ::: {.callout-tip}
 
-The interactive view below let's you play with the prior and posterior distributions of a coin toss experiment. 
+The interactive view below let's you play with the prior and posterior distributions of a coin experiment. 
 
 Note how, for $Beta(1,1)$, the prior is uniform. This means that we have no prior knowledge about the coin bias (we call this uninformative prior), and only the likelihood term will influence the posterior. 
 :::
@@ -207,7 +220,22 @@ Plot.plot({
 });
 ```
 
-### Approximating posterior from data
+### Hyperpriors
+
+As in any machine learning model, we have hyperparameters in our bayesian models, that are the parameters of the prior distribution. For example, in @eq-bayes-propto, $\alpha$ and $\beta$ are two hyperparameters that we have to set before fitting the model to data. However, in Bayesian Inference, we can go further and specify *hyperpriors*, that are priors over the parameters of the priors.
+
+Notice how Bayes' rule can be factorized using conditional probabilities:
+
+$$
+P(\theta|X) = P(X|\theta)P(\theta|\alpha,\beta)P(\alpha,\beta)
+$$
+
+so that our distribution over $\theta$ depends on the specification of the distribution of another set of parameters. You can think of this as setting priors on the hyperparameters of a model, and not on the parameters. **Bayesian Hierarchical Models** that leverage this idea, and they have powerful features that allow one to obtain better estimates than models with standard priors.
+
+One powerful motivation of hyperpriors is when we are modelling a set of parameters that are related to each other, and we want to share information between them. For example, if we have a set of parameters $\{\theta_i\}_{i=1}^K$, that could represent the same quantity, but for $K$ different groups, we can use a hyperprior to specify our beliefs of the global distribution of these parameters, and let this distribution influence the posterior of each individual parameter $\theta_i$. This is called **hierarchical pooling**. We will see an example of this later.
+
+
+## Approximating posterior from data
 
 In other situations (most of them), developing the equations does not lead to an analytical solution.
 In such cases, we can use alternative methods to approximate the posterior distribution.
@@ -215,15 +243,19 @@ In such cases, we can use alternative methods to approximate the posterior distr
 There is a spectrum of methods to approximate the posterior distribution, from point estimates to sampling methods. Here are some of the most common ones, from "most bayesian" to "least bayesian":
 
 
-1. **Markov Chain Monte Carlo (MCMC)**: by using the unnormalized posterior in equation @eq-bayes-propto, we can sample many instances of $\{\theta_i\}_{i=1}^K$ with probabilities proportional to their true posterior probabilities. The result of the estimation is a set of samples that simulate samples from the true posterior, and can be used to compute the mean, percentile or any quantity of interest.
+1. **Markov Chain Monte Carlo (MCMC)**: by using the unnormalized posterior in equation @eq-bayes-propto, we can sample many instances of $\{\theta_i\}_{i=1}^K \sim p(\theta|X)$ with probabilities proportional to their true posterior probabilities. The result of the estimation is a set of samples that simulate samples from the true posterior, and can be used to compute the mean, percentile or any quantity of interest.
 
-2. **Variational Inference (VI)**: since the true posterior distribution may be hard to compute, we can use another simpler candidate distribution, and seek the parameters of this approximate distribution that minimize the distance to the true posterior. This is often done by minimizing the Kullback-Leibler divergence between the true posterior and the approximate distribution. The result are parameters of the candidate distribution, that can be used to sample sets of parameters and compute the mean, percentiles or any quantity of interest. This is often faster than MCMC, but may not capture the true posterior distribution as well as MCMC intends to.
+2. **Variational Inference (VI)**: since the true posterior $p(\theta|X)$ distribution may be hard or slow to sample from, we can use another simpler candidate distribution $q(\theta)$, and seek the parameters of this approximate distribution that minimize the distance to the true posterior. This is often done by minimizing the Kullback-Leibler divergence $KL(q(\theta)||p(\theta|X))$ using stochastic optimization algorithms. In such situation, it is called Stochastic Variational Inference (SVI). The result are parameters of the candidate distribution, that can be used to sample sets of parameters and compute the mean, percentiles or any quantity of interest. This is often faster than MCMC.
 
-3. **Maximum A Posteriori (MAP)**: this is a point estimate of the posterior distribution, which finds the mode (maximum) of the posterior distribution. It is often faster and easier to compute than the full posterior distribution.
+3. **Maximum A Posteriori (MAP)**: this is a point estimate of the posterior distribution, which finds the mode (maximum) of the posterior distribution $\arg \max_\theta p(\theta|X)$. It is often faster and easier to compute than the full posterior distribution, but does not provide a distribution on parameters such as VI or MCMC.
 
 
 
-#### Markov Chain Monte Carlo (MCMC)
+### Markov Chain Monte Carlo (MCMC)
+
+---
+
+![Illustration of a MCMC chain](mcmc_convergence.png){fig-align="center" width="50%"}
 
 Estimating the full posterior distribution, and not single point, turns out to be extremely useful when we want to measure risks and other quantities. This is where MCMC comes in. MCMC is based on two key ideas: Markov Chains and Monte Carlo methods. 
 
@@ -231,134 +263,72 @@ Markov chains are random sequences of states $\{S_i\}$, with a given transition 
 
 These random sequences can have an interesting property of **stationary distributions**. In other words, these sequences can have as an equilibrium a certain distribution $p$, so that, if the sequence starts at $p$, future values are also drawn according to the probability $p$. What if we could build a Markov chain that has as stationary distribution the posterior distribution we are interested in? This is the key idea of MCMC.
 
-The MCMC basically designs a Markov Chain that have as stationary distribution the distribution of interest: our posterior $P(\theta|X)$.
+Then, MCMC basically designs a Markov Chain that have as stationary distribution the distribution of interest: our posterior $P(\theta|X)$.
 The name Monte Carlo comes from the famous casinos in Monaco, and its basic idea is that by using random samples we can approximate some quantity of interest.
 
-Consider the example below, where we sample many times from a beta distribution. With more and more samples randomly draw from it, our approximation quality increases, and the histogram starts to look more like the true distribution.
+| Piece        | What it supplies                                                                 | Typical source of randomness                                       |
+|--------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| Markov chain | A machinery for generating a sequence of states whose distribution converges to the target π(·). | Transition kernel: proposal distribution, conditional sampler, etc. |
+| Monte Carlo  | The fact that, once you have (asymptotically) draws from π, you can approximate any expectation \(\mathbb{E}_\pi[f(X)]\) by the empirical average \(\frac{1}{N} \sum_{t=1}^N f(X_t)\). | Every random step in building and moving along the chain           |
 
+The simplest MCMC algorithm is the **Metropolis-Hastings** algorithm, which is based on the idea of proposing new states and accepting or rejecting them based on their probabilities. 
+
+
+##### Metropolis Hasting (MH) algorithm
+
+The algorithm has two major parts: initialization and sampling.
+
+::: {}
+1. **Initialization**
+    i) Choose a prior $P(\theta)$ over the parameters, and a likelihood $P(X|\theta)$ over the data.
+    ii) Choose an initial value for the parameter $\theta_0$ (often sampled from the prior).
+    iii) Choose a transition function $T(\theta_{t+1}|\theta_t)$ to suggest new values of $\theta$. Here we set $T(\theta_{t+1}|\theta_t) = \theta_t + \mathcal{N}(0,1)$
+2. **Sampling**
+   i) Propose a new candidate $\theta_{t+1} \sim T(\theta_{i+1}|\theta_{i})$
+   ii) Compute $\hat{P}(\theta_{t+1}|X) = P(X|\theta_{t+1})P(\theta_{t+1})$ and $\hat{P}(\theta_{t}|X) = P(X|\theta_{t})P(\theta_{t})$
+   iii) Accept the candidate with probability $\min\left(1, \frac{\hat{P}(\theta_{t+1}|X)}{\hat{P}(\theta_{t}|X)}\right)$
+
+:::
+
+Let's build a simple Metropolis-Hastings algorithm from scratch, to understand how it works, and try to infer the posterior distribution of proportion of red balls as in our previous example, given a sample dataset. As a prior, we will use an uniform distribution between 0 and 1, and as likelihood we will use a Bernoulli distribution with parameter $\theta$.
+
+We first define distributions, and a simple common interface, with two methods: `log_prob` to compute the log-probability of a value, and `sample` to generate samples from the distribution. 
 ```{python}
-# | echo: False
-
-from IPython.display import HTML
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from scipy.stats import beta as beta_dist  # only for drawing the reference PDF
-
-# -------------------------------------------------
-# 1. Draw “MCMC” samples
-# -------------------------------------------------
-np.random.seed(42)
-n_samples = 100  # total samples to show
-samples = np.random.beta(2, 5, n_samples)
-
-# Fixed histogram binning
-bins = np.linspace(0, 1, 31)  # 30 equal-width bins
-bin_width = bins[1] - bins[0]
-
-# Reference Beta(2,5) PDF for comparison
-x_pdf = np.linspace(0, 1, 500)
-pdf_true = beta_dist.pdf(x_pdf, 2, 5)
-
-# -------------------------------------------------
-# 2. Set up the figure & artists
-# -------------------------------------------------
-fig, ax = plt.subplots()
-
-# Empty placeholders; artists are updated in `update`
-bars = ax.bar(
-    bins[:-1],
-    np.zeros(len(bins) - 1),
-    width=bin_width,
-    align="edge",
-    alpha=0.6,
-    label="Empirical histogram",
-)
-(line_pdf,) = ax.plot([], [], "k--", lw=2, label="True Beta(2,5) PDF")
-(point,) = ax.plot([], [], "ro", label="Current sample")
-
-
-def init():
-    """Initialize empty frame."""
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 8)
-    ax.set_xlabel("θ")
-    ax.set_ylabel("Density")
-    ax.set_title("Building a posterior via samples")
-    ax.legend(loc="upper right")
-    # Pre-draw the true PDF once (static)
-    line_pdf.set_data(x_pdf, pdf_true)
-    return (*bars, line_pdf, point)
-
-
-# -------------------------------------------------
-# 3. Animation callback
-# -------------------------------------------------
-def update(frame):
-    """
-    At every frame `frame`, use the first `frame + 1` samples
-    to update the histogram and mark the latest draw.
-    """
-    current = samples[: frame + 1]
-
-    # Update histogram heights
-    counts, _ = np.histogram(current, bins=bins, density=True)
-    for rect, h in zip(bars, counts):
-        rect.set_height(h)
-
-    # Move the red point to the newest sample
-    point.set_data([samples[frame]], [0])  # at density 0 for visibility
-
-    ax.set_title(f"Samples shown: {frame + 1} / {n_samples}")
-    return (*bars, point)
-
-
-# -------------------------------------------------
-# 4. Create & display the animation
-# -------------------------------------------------
-ani = FuncAnimation(
-    fig,
-    update,
-    frames=n_samples,
-    init_func=init,
-    interval=10,  # milliseconds between frames
-    blit=True,
-    repeat=False,
-)
-plt.close()  # avoid duplicate static
-
-HTML(ani.to_jshtml())
-```
-
-In a nutshell, Monte Carlo methods leverage the randomness to approximate functions of a random distribution.
-
-Breaking down the name, Monte Carlo is similar to trial and error methods, seasoned with randomness; Markov Chain means we are
-interested in sequences of random variables, where the next variable in the sequence depends only on the current one, not on the previous ones. Basically, if we could reduce MCMC explanation to few words, we could say that MCMC tries to take a lot of samples from $P(\theta|X)$, based on trial and error, and the accepted samples will be the posterior distribution. MCMC comes in different flavours: Metropolis-Hastings, Gibbs sampling, Hamiltonian Monte Carlo, etc. The key idea is that we can generate samples from the posterior distribution by constructing a Markov chain that has the desired distribution as its equilibrium distribution.
-
-##### Metropolis Hasting algorithm
-
-
-```{python}
-# | echo: false
+# | echo: true
+# | label: distributions
 
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from IPython.display import HTML, display
 
 
-# ------------------------------------------------------------------
-# Helper distributions and MH kernel
-# ------------------------------------------------------------------
 class Distribution:
+    """
+    Base distribution class
+
+    Subclasses should implement the `log_prob` and `sample` methods.
+    """
+
     def log_prob(self, value):
-        raise NotImplementedError
+        """Return the log probability of the value under the distribution."""
+        raise NotImplementedError()
 
     def sample(self, size=1):
-        raise NotImplementedError
+        """Sample from the distribution."""
+        raise NotImplementedError()
 
 
 class Uniform(Distribution):
+    """
+    Uniform distribution.
+
+    Parameters
+    ----------
+    lower : float
+        Lower bound of the uniform distribution.
+    upper : float
+        Upper bound of the uniform distribution.
+
+    """
+
     def __init__(self, lower, upper):
         self.lower, self.upper = lower, upper
 
@@ -374,6 +344,16 @@ class Uniform(Distribution):
 
 
 class Bernoulli(Distribution):
+    """
+    Bernoulli distribution.
+
+    Parameters
+    ----------
+    p : float
+        Probability of success (1) in the Bernoulli distribution.
+        Must be in the range [0, 1].
+    """
+
     def __init__(self, p):
         self.p = p
 
@@ -383,9 +363,25 @@ class Bernoulli(Distribution):
 
     def sample(self, size=1):
         return np.random.binomial(1, self.p, size=size)
+```
 
+Now, we implement the Metropolis-Hastings algorithm, which will use these distributions to sample from the posterior.
+
+```{python}
 
 class MetropolisHasting:
+    """
+    A simple Metropolis Hasting algorithm
+
+    Parameters
+    ----------
+    num_samples : int
+        Number of samples to draw from the posterior.
+    num_warmup : int
+        Number of warmup iterations to discard before starting to collect samples.
+    step_size : float
+        Step size for the proposal distribution. This controls how far the proposed samples can be from the current sample.
+    """
     def __init__(self, num_samples, num_warmup, step_size=0.1):
         self.num_samples, self.num_warmup, self.step_size = (
             num_samples,
@@ -394,9 +390,38 @@ class MetropolisHasting:
         )
 
     def _transition(self, x):
+        """
+        Samples $x_{i+1}$ from transition function.
+        
+        Parameters
+        ----------
+        x : float
+            Current sample value, $x_t$
+        """
         return x + np.random.normal(0, self.step_size)
 
-    def run(self, data, prior, model_cls, p0=None):
+    def run(self, data, prior, likelihood, p0=None):
+        """
+        Run the MH Algorithm.
+
+        Parameters
+        ----------
+        data : array-like
+            Observed data to compute the likelihood.
+        prior : Distribution
+            Prior distribution of the parameter.
+        likelihood : Distribution
+            Likelihood distribution of the data given the parameter.
+        p0 : float, optional
+            Initial value for the parameter. If None, it will sample from the prior.
+        
+        Returns
+        -------
+        samples : np.ndarray
+            Samples from the posterior distribution.
+        accepted : np.ndarray
+            Array indicating whether each sample was accepted (1) or rejected (0).
+        """
         N = self.num_samples + self.num_warmup
         samples = np.full(N, np.nan)
         accepted = np.zeros(N, dtype=int)
@@ -404,8 +429,8 @@ class MetropolisHasting:
         samples[0] = cur
         for i in range(1, N):
             cand = self._transition(cur)
-            logp_cur = prior.log_prob(cur) + model_cls(cur).log_prob(data)
-            logp_cand = prior.log_prob(cand) + model_cls(cand).log_prob(data)
+            logp_cur = prior.log_prob(cur) + likelihood(cur).log_prob(data)
+            logp_cand = prior.log_prob(cand) + likelihood(cand).log_prob(data)
             if np.log(np.random.uniform()) <= logp_cand - logp_cur:
                 cur = cand
                 if i >= self.num_warmup:
@@ -420,11 +445,17 @@ class MetropolisHasting:
 np.random.seed(42)
 data = np.random.binomial(1, 0.2, size=50)
 mh = MetropolisHasting(num_samples=250, num_warmup=25, step_size=0.1)
-samples, accept = mh.run(data, prior=Uniform(0, 1), model_cls=Bernoulli, p0=0.6)
+samples, accept = mh.run(data, prior=Uniform(0, 1), likelihood=Bernoulli, p0=0.6)
 
-# ------------------------------------------------------------------
-# Colors for accepted/rejected
-# ------------------------------------------------------------------
+```
+
+```{python}
+# | echo: False
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from IPython.display import HTML, display
+
 col_rej = "red"
 col_acc = "blue"
 
@@ -457,9 +488,6 @@ ax_hist.set_xlim(0, None)  # autoscale x‐axis
 # y‐limits inherited from sharey
 
 
-# ------------------------------------------------------------------
-# Animation setup (faster: interval=20ms)
-# ------------------------------------------------------------------
 def init():
     sc_rej.set_data([], [])
     sc_acc.set_data([], [])
@@ -512,9 +540,76 @@ plt.close()
 
 ```
 
-![Metropolis Hasting](mh_accepted_rejected_fast.gif)
+![Metropolis Hasting. The plot on the left shows the MCMC path, with accepted (blue) and rejected (red) samples. The plot on the right illustrates an histogram of accepted samples.](mh_accepted_rejected_fast.gif)
 
-## Variational Inference
+We can see how, after a certain number of iterations, the samples start to cluster around the true value. Other MCMC algorithms, such as Hamiltonian Monte Carlo, leverage the gradients of the posterior to propose new samples, and can converge faster than the simple MCMC algorithm we just implemented. Libraries such as [PyMC](https://docs.pymc.io/) and [NumPyro](https://num.pyro.ai/en/stable/) provide efficient implementations of MCMC algorithms, and can be used to sample from the posterior distribution of more complex models.
+
+#### Simple numpyro implementation
+
+In numpyro, things are much simpler and, thanks to jax-based backend, also faster. We need to define a function that receives our data, and defines the relationship between variable samples (observed and not observed).
+
+```{python}
+import jax
+import jax.numpy as jnp
+from jax import random
+import numpyro
+import numpyro.distributions as dist
+from numpyro.infer import NUTS, MCMC
+
+
+def bernoulli_model(data=None):
+    """Uniform-prior Bernoulli model p ~ U(0,1)."""
+    p = numpyro.sample("p", dist.Uniform(0.0, 1.0))
+    with numpyro.plate("obs", data.shape[0]):
+        numpyro.sample("y", dist.Bernoulli(probs=p), obs=data)
+```
+
+Now, we can use the `NUTS` kernel to sample from the posterior distribution. NUTS is a variant of Hamiltonian Monte Carlo that automatically tunes the step size and number of leapfrog steps, making it more efficient than the basic Metropolis-Hastings algorithm.
+
+```{python}
+# Random seed for reproducibility
+key = jax.random.PRNGKey(0)
+
+nuts_kernel = NUTS(
+    bernoulli_model, step_size=0.1
+)  # step_size matches your MH proposal scale
+mcmc = MCMC(nuts_kernel, num_warmup=200, num_samples=1000, progress_bar=False)
+mcmc.run(key, data=data)
+posterior = mcmc.get_samples()["p"]  # (250,) array – exactly like your `samples`
+```
+
+```{python}
+# | echo: false
+# Plot histogram of posterior samples
+plt.hist(
+    posterior, bins=30, density=True, alpha=0.7, color="blue", label="Posterior samples"
+)
+plt.axvline(posterior.mean(), color="red", linestyle="--", label="Posterior mean")
+plt.axvline(
+    jnp.quantile(posterior, 0.025), color="green", linestyle="--", label="2.5% quantile"
+)
+plt.axvline(
+    jnp.quantile(posterior, 0.975),
+    color="green",
+    linestyle="--",
+    label="97.5% quantile",
+)
+plt.axvline(0.2, color="black", linestyle="-", label="True p = 0.2")
+plt.xlabel("p")
+plt.ylabel("Density")
+plt.title("Posterior Distribution of p")
+plt.legend()
+plt.show()
+
+print("Posterior mean of p:", posterior.mean())
+print("95% credible interval:", jnp.quantile(posterior, jnp.array([0.025, 0.975])))
+```
+
+One downside of MCMC is that it can be slow to converge, especially for high-dimensional problems. Other approaches provide an approximation of the posterior distribution, with the objective of being faster. One of such methods is Variational Inference.
+
+### Variational Inference (VI)
+
+
 
 ```{python}
 # | echo: False
@@ -596,12 +691,148 @@ plt.close()  # prevent duplicate static plot
 HTML(ani.to_jshtml())
 ```
 
-##### Metropolis-Hastings (MH) algorithm
+In Variational Inference (VI), we are not interested in the exact posterior distribution. Instead, we want to simplify and find an approximation by using another distribution $q$, called variational distribution, belonging to a family of tractable distributions such as Normal distribution.
 
-It is easy to build the MH algorithm from scratch, and useful to understand the basics of MCMC. Let's separate the initialization and the sampling steps:
+The goal is to find $q(\theta)$ that is as close as possible to the true posterior $p(\theta|X)$, in the sense of minimizing the Kullback-Leibler divergence:
+
+$$
+\arg\min_{q \in \mathcal{Q}} KL(q||p(\cdot|X))
+$$
+
+where $\mathcal{Q}$ is the family of distributions we are considering for $q(\theta)$. 
 
 
-#### Maximum A Posteriori (MAP)
+```{python}
+# | echo: false
+
+import matplotlib.patches as patches
+
+# Create figure and axis
+fig, ax = plt.subplots(figsize=(8, 4))
+
+# Draw the "space of all distributions"
+ax.set_xlim(0, 10)
+ax.set_ylim(0, 10)
+ax.set_aspect("equal")
+ax.set_facecolor("#f5f5f5")
+ax.text(5, 9.5, "Space of all distributions", ha="center", fontsize=14)
+
+# Draw the variational family as an ellipse
+ellipse = patches.Ellipse(
+    (4, 5), width=5, height=3, edgecolor="black", facecolor="lightgrey", alpha=0.5
+)
+ax.add_patch(ellipse)
+ax.text(
+    4, 5.5, "Variational\nfamily $\mathcal{Q}$", ha="center", va="center", fontsize=12
+)
+
+# Plot the true posterior p(z|x)
+ax.plot(8, 5, "o", color="brown", markersize=10)
+ax.text(8.3, 5, r"$p(z \mid x)$", fontsize=12, va="center")
+
+# Plot the optimal q*(z) on the ellipse edge
+edge_x = 4 + (5 / 2)  # center x + horizontal radius
+edge_y = 5  # same center y
+ax.plot(edge_x, edge_y, "o", color="black", markersize=10)
+ax.text(edge_x + 0.3, edge_y, r"$q(z)$", fontsize=12, va="center")
+
+# Show plot borders by enabling spines and turning off ticks
+ax.spines["top"].set_visible(True)
+ax.spines["right"].set_visible(True)
+ax.spines["bottom"].set_visible(True)
+ax.spines["left"].set_visible(True)
+ax.set_xticks([])
+ax.set_yticks([])
+
+plt.tight_layout()
+plt.show()
+```
+
+
+In the past, we would
+choose $\mathcal{Q}$ so that an analitical solution would be available, but this is not the case anymore. Modern probabilistic programming libraries come with the feature of Stochastic Variational Inference (SVI) that can handle arbitrary families of distributions $\mathcal{Q}$ to find a numerical solution. The trick is having $q_\lambda$ defined by a set of parameters $\lambda$, which are directly optimized.
+
+In Numpyro, the variational distributions are called **guides**, and there are tools for automatically performing a SVI of our model. For our example of Bernoulli distribution, it would look like this.
+
+We first define our SVI engine, with the help of a guide (`AutoNormal`, that uses a normal distribution as variational family, and the parameters $\lambda = \{\mu, \sigma\}$ of mean and standard deviation are optimized), and an optimizer.
+```{python}
+from numpyro.infer import SVI, Trace_ELBO, autoguide
+from numpyro.optim import Adam
+
+
+guide = autoguide.AutoNormal(bernoulli_model)  # guide with diagonal covariance
+optimizer = Adam(1e-2)  # any optax optimizer works
+
+
+svi = SVI(bernoulli_model, guide, optimizer, loss=Trace_ELBO())
+```
+
+And now we can run the optimization loop, by initing the state of the SVI and sequentially updating it.
+
+```{python}
+n_iterations = 5000
+# Run the optimization loop
+# Initialize SVI state
+rng_key = jax.random.PRNGKey(0)
+svi_state = svi.init(rng_key, data)
+
+
+# Compile the update function for efficiency
+@jax.jit
+def run_step(state, data):
+    return svi.update(state, data)
+
+
+losses = []
+for i in range(n_iterations):
+    svi_state, loss = run_step(svi_state, data)
+    losses.append(loss)
+    if i % 500 == 0:
+        print(f"Iteration {i}, ELBO Loss = {loss:.4f}")
+
+plt.figure(figsize=(8,4))
+plt.plot(losses, label="ELBO Loss")
+plt.xlabel("Iteration")
+plt.ylabel("Loss")
+plt.title("ELBO Loss during Variational Inference")
+plt.legend()
+plt.show()
+```
+
+The solution looks like below:
+
+```{python}
+# | code-fold: true
+
+# Extract optimized parameters and generate posterior samples
+params = svi.get_params(svi_state)
+posterior_samples = guide.sample_posterior(
+    random.PRNGKey(1), params, sample_shape=(1000,)
+)
+
+# Plot the posterior samples
+plt.hist(
+    posterior_samples["p"],
+    bins=30,
+    density=True,
+    alpha=0.7,
+    color="blue",
+    label="Posterior samples",
+)
+plt.axvline(
+    posterior_samples["p"].mean(), color="red", linestyle="--", label="Posterior mean"
+)
+# True value
+plt.axvline(0.2, color="black", linestyle="-", label="True p = 0.2")
+plt.xlabel("p")
+plt.ylabel("Density")
+plt.title("Posterior Distribution of p (Variational Inference)")
+plt.legend()
+plt.show()
+```
+
+
+### Maximum A Posteriori (MAP)
 
 The Maximum A Posteriori (MAP) estimate is the mode of the posterior distribution: the value of $\theta$ that maximizes the posterior probability density function. Because it does not compute the entire distribution over $\theta$, and just the most probable value according to the posterior, it is often faster and easier to compute than the full posterior distribution.
 
@@ -664,62 +895,42 @@ HTML(ani.to_jshtml())
 
 Although not a "true" bayesian inferece, MAP can provide us point estimates that balance the prior and likelihood. The posterior $P(\theta|X)$  is treated as a function whose maximum we want to find, and
 due to amazing libraries such as numpyro, and jax, we
-can leverage autodiff to compute the gradient of the posterior, and rapidly estimate it.
+can leverage autodiff to compute the gradient of the posterior, and rapidly estimate it. The Maximum Likelihood Estimate (MLE) would be a frequentist approach similar to MAP, but, in this case, we completely ignore the prior, and optimize the likelihood function. In this sense, you can think of
+MAP as a regularized version of MLE, where the prior acts as a regularization term.
+
+
+It is really simple to implement MAP it in numpyro, take a look below. We use a guide, that converts our sample sites to point estimates, and then use the `SVI` (Stochastic Variational Inference) class to optimize the parameters of the guide. The guide is a simple point estimate, so it collapses to a single value for each parameter.
 
 
 ```{python}
-# | echo: False
-# Define the parameter range
-theta = np.linspace(-5, 5, 500)
 
-# Define prior, likelihood, and unnormalized posterior
-prior = np.exp(-0.5 * theta**2)
-likelihood = np.exp(-0.5 * (theta - 2) ** 2 / (0.5**2))
-posterior = prior * likelihood
+guide = autoguide.AutoDelta(bernoulli_model)  # guide with point estimates
+svi = SVI(bernoulli_model, guide, Adam(0.01), loss=Trace_ELBO())
 
+# Init and optimize
+rng_key = jax.random.PRNGKey(0)
+svi_state = svi.init(rng_key, data)
 
-# Compute gradient of the log-posterior analytically
-def grad_log_post(t):
-    return -t - (t - 2) / (0.5**2)
+losses = []
+for i in range(n_iterations):
+    svi_state, loss = run_step(svi_state, data)
+    losses.append(loss)
+    if i % 500 == 0:
+        print(f"Iteration {i}, ELBO Loss = {loss:.4f}")
 
+plt.figure(figsize=(8, 4))
+plt.plot(losses, label="ELBO Loss")
+plt.xlabel("Iteration")
+plt.ylabel("Loss")
+plt.title("ELBO Loss during Variational Inference")
+plt.legend()
+plt.show()
 
-# Perform gradient ascent to generate trajectory of theta values
-lr = 0.06
-num_steps = 30
-thetas = [-4.0]
-for _ in range(num_steps - 1):
-    t = thetas[-1]
-    t_new = t + lr * grad_log_post(t)
-    thetas.append(t_new)
-
-# Normalize posterior for plotting
-posterior_norm = posterior / np.max(posterior)
-
-# Set up the figure and axis
-fig, ax = plt.subplots()
-ax.set_xlim(-5, 5)
-ax.set_ylim(0, 1.2)
-ax.plot(theta, posterior_norm, label="Unnormalized Posterior")
-(point,) = ax.plot([], [], "o", markersize=10)
-ax.set_xlabel("θ")
-ax.set_ylabel("Density")
-ax.legend()
-
-
-# Animation update function
-def update(i):
-    point.set_data([thetas[i]], [np.interp(thetas[i], theta, posterior_norm)])
-    return (point,)
-
-
-# Create animation
-ani = FuncAnimation(fig, update, frames=len(thetas), blit=True)
-plt.close()
-HTML(ani.to_jshtml())
+# Extract the MAP estimate (a scalar)
+params = svi.get_params(svi_state)
+posterior = guide.sample_posterior(random.PRNGKey(1), params, sample_shape=())
+print("MAP estimate for p:", float(posterior["p"]))
 ```
-
-The **Maximum Likelihood Estimate (MLE)** would be a frequentist approach similar to MAP, but, in this case, we completely ignore the prior, and optimize the likelihood function. In this sense, you can think of
-MAP as a regularized version of MLE, where the prior acts as a regularization term.
 
 
 ::: {.callout-tip}
@@ -730,23 +941,23 @@ In many cases, **the MAP estimate is equivalent to the MLE estimate with a regul
 
 :::
 
-## Why?
+## Example of applications of Bayesian Inference
 
 Bayesian inference is not a familiar topic for many data scientist practitioners,
 but provides a rich set of toolkits for data scientists and businesses that know it. 
-Two reasons make it attractive:
 
+Here are three of the many reasons make it something worth studying:
+
+* Probabilistic programming is useful, and bayesian inference is a natural way to define probabilistic models.
 * In the lack of large datasets, good and informative **regularization** is key to avoid obtaining bad estimates from your model. The *priors* are a natural way
 of regularizing a model.
 * MCMC samples provides an elegant solution to accessing the risks of the outputs a model, or any transformations of it (such as cumulative values).
 
-If the words "bayesian" and "inference" make you afraid: do not worry.
- We will see that, if you already fitted a ridge or lasso regression, you already did
-something bayesian. We could also create a gradient of "how" bayesian 
+### <here>
+
+### Censored models
 
 
-
-## Hierarchical bayesian models
 
 *This blog post is based on a talk presented at Galp. This post is not meant to be seen as part of "bayesian vs frequentist" rivalry.
 I aim to point at some examples of problems where bayesian methodologies can better answer the business **questions** and provide extra insights, that similar frequentist methods maybe also could, but not in a natural or easy way as with
