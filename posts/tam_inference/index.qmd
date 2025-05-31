@@ -1,0 +1,12 @@
+---
+title: "Total Addressable Market inference"
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: 4
+author: "Felipe Angelim"
+date: "2025-05-29"
+categories: [machine learning, bayesian inference]
+jupyter: python3
+---

@@ -1,6 +1,6 @@
 ---
-title: "Bayesian Inference - What, When, why, how?"
-image: thumbnail.png
+title: "Bayesian Inference - Motivation and Basics"
+description: "A primer on Bayesian Inference, its motivations, and how it works."
 format:
   html:
     toc: true
@@ -12,10 +12,18 @@ categories: [machine learning, bayesian inference]
 jupyter: python3
 ---
 
-Two reasons to know and use bayesian inference:
+Everyone has heard about Bayesian Inference, but few people know what it is, how it works, and why it is useful. In this post, we will explore the basics of Bayesian Inference, focusing on the inference methodologies and their motivations. Here are some motivations of having it as a new tool in your toolbox:
 
-* **Probabilistic programming is powerful, and bayesian inference provides a solid foundation for it**. It is the basis of many probabilistic programming libraries, such as [PyMC](https://docs.pymc.io/), [NumPyro](https://num.pyro.ai/en/stable/), and [TensorFlow Probability](https://www.tensorflow.org/probability). 
+* **Probabilistic programming is powerful**, and bayesian inference provides a solid foundation for it. With probabilistic programming, we can build models that can handle uncertainty, incorporate prior knowledge about the data generation process, and are interpretable. Bayesian Inference is the basis of many probabilistic programming libraries, such as [PyMC](https://docs.pymc.io/) and [NumPyro](https://num.pyro.ai/en/stable/).
 * **Regularization**. Machine learning is about balancing the correct amount of regularization to avoid overfitting. Bayesian inference provides a principled way to do this, by using priors to regularize the model.
+* **Uncertainty quantification**. Bayesian inference allows us to quantify the uncertainty in our predictions, and any transformation of the parameters, such as the mean, median, or quantiles, through samples from our posterior distribution. This is extremely useful in many applications, such as risk assessment, decision making, and model evaluation.
+
+In addition, we can list some concrete use-cases of Bayesian Inference, such as:
+
+* Censored data analysis: model the distribution of a quantity of interest, given that we only observe a subset of the data, such as in survival analysis or reliability engineering.
+* A/B testing: use the posterior to quantify the probability of one variant being better than another, and to compute credible intervals for the difference in means.
+* Hierarchical models: use the hyperprior to share information between groups, and improve the estimate for underrepresented groups (e.g. price elasticity of demand).
+* Time series forecasting: use the prior to regularize the model and avoid overfitting, and use the posterior to quantify uncertainty in the predictions, probability of stock-outs and other quantities of interest.
 
 ```{python}
 # | echo: false
@@ -245,7 +253,7 @@ There is a spectrum of methods to approximate the posterior distribution, from p
 
 1. **Markov Chain Monte Carlo (MCMC)**: by using the unnormalized posterior in equation @eq-bayes-propto, we can sample many instances of $\{\theta_i\}_{i=1}^K \sim p(\theta|X)$ with probabilities proportional to their true posterior probabilities. The result of the estimation is a set of samples that simulate samples from the true posterior, and can be used to compute the mean, percentile or any quantity of interest.
 
-2. **Variational Inference (VI)**: since the true posterior $p(\theta|X)$ distribution may be hard or slow to sample from, we can use another simpler candidate distribution $q(\theta)$, and seek the parameters of this approximate distribution that minimize the distance to the true posterior. This is often done by minimizing the Kullback-Leibler divergence $KL(q(\theta)||p(\theta|X))$ using stochastic optimization algorithms. In such situation, it is called Stochastic Variational Inference (SVI). The result are parameters of the candidate distribution, that can be used to sample sets of parameters and compute the mean, percentiles or any quantity of interest. This is often faster than MCMC.
+2. **Variational Inference (VI)**: since the true posterior $p(\theta|X)$ distribution may be hard or slow to sample from, we can use another simpler candidate distribution $q(\theta)$, and seek the parameters of this approximate distribution that minimize the distance to the true posterior. This is often done by minimizing the Kullback-Leibler divergence $KL(q||p(\cdot|X))$ using stochastic optimization algorithms. In such situation, it is called Stochastic Variational Inference (SVI). The result are parameters of the candidate distribution, that can be used to sample sets of parameters and compute the mean, percentiles or any quantity of interest. This is often faster than MCMC.
 
 3. **Maximum A Posteriori (MAP)**: this is a point estimate of the posterior distribution, which finds the mode (maximum) of the posterior distribution $\arg \max_\theta p(\theta|X)$. It is often faster and easier to compute than the full posterior distribution, but does not provide a distribution on parameters such as VI or MCMC.
 
@@ -269,12 +277,12 @@ The name Monte Carlo comes from the famous casinos in Monaco, and its basic idea
 | Piece        | What it supplies                                                                 | Typical source of randomness                                       |
 |--------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------|
 | Markov chain | A machinery for generating a sequence of states whose distribution converges to the target π(·). | Transition kernel: proposal distribution, conditional sampler, etc. |
-| Monte Carlo  | The fact that, once you have (asymptotically) draws from π, you can approximate any expectation \(\mathbb{E}_\pi[f(X)]\) by the empirical average \(\frac{1}{N} \sum_{t=1}^N f(X_t)\). | Every random step in building and moving along the chain           |
+| Monte Carlo  | The fact that, once you have (asymptotically) draws from π, you can approximate any expectation $\mathbb{E}_\pi[f(X)]$ by the empirical average $\frac{1}{N} \sum_{t=1}^N f(X_t)$. | Every random step in building and moving along the chain           |
 
 The simplest MCMC algorithm is the **Metropolis-Hastings** algorithm, which is based on the idea of proposing new states and accepting or rejecting them based on their probabilities. 
 
 
-##### Metropolis Hasting (MH) algorithm
+#### Metropolis Hasting (MH) algorithm
 
 The algorithm has two major parts: initialization and sampling.
 
@@ -704,6 +712,7 @@ where $\mathcal{Q}$ is the family of distributions we are considering for $q(\th
 
 ```{python}
 # | echo: false
+# | fig-align: "center"
 
 import matplotlib.patches as patches
 
@@ -728,13 +737,13 @@ ax.text(
 
 # Plot the true posterior p(z|x)
 ax.plot(8, 5, "o", color="brown", markersize=10)
-ax.text(8.3, 5, r"$p(z \mid x)$", fontsize=12, va="center")
+ax.text(8.3, 5, r"$p(\theta \mid X)$", fontsize=12, va="center")
 
 # Plot the optimal q*(z) on the ellipse edge
 edge_x = 4 + (5 / 2)  # center x + horizontal radius
 edge_y = 5  # same center y
 ax.plot(edge_x, edge_y, "o", color="black", markersize=10)
-ax.text(edge_x + 0.3, edge_y, r"$q(z)$", fontsize=12, va="center")
+ax.text(edge_x + 0.3, edge_y, r"$q(\theta)$", fontsize=12, va="center")
 
 # Show plot borders by enabling spines and turning off ticks
 ax.spines["top"].set_visible(True)
@@ -941,36 +950,6 @@ In many cases, **the MAP estimate is equivalent to the MLE estimate with a regul
 
 :::
 
-## Example of applications of Bayesian Inference
 
-Bayesian inference is not a familiar topic for many data scientist practitioners,
-but provides a rich set of toolkits for data scientists and businesses that know it. 
-
-Here are three of the many reasons make it something worth studying:
-
-* Probabilistic programming is useful, and bayesian inference is a natural way to define probabilistic models.
-* In the lack of large datasets, good and informative **regularization** is key to avoid obtaining bad estimates from your model. The *priors* are a natural way
-of regularizing a model.
-* MCMC samples provides an elegant solution to accessing the risks of the outputs a model, or any transformations of it (such as cumulative values).
-
-### <here>
-
-### Censored models
-
-
-
-*This blog post is based on a talk presented at Galp. This post is not meant to be seen as part of "bayesian vs frequentist" rivalry.
-I aim to point at some examples of problems where bayesian methodologies can better answer the business **questions** and provide extra insights, that similar frequentist methods maybe also could, but not in a natural or easy way as with
-bayesian logic.*
-
-
-
-### Reasons to study bayesian inference
-
-Given that we now understand the different point of views, I can list another reasons to why to study bayesian inference:
-
-1. **Regularization**: Bayesian inference provides a natural way to regularize models through priors, which can help prevent overfitting, especially in cases with limited data. In addition to that, seeing regularization as a prior belief on the parameters can be much more natural and intuitive, often making it easier to communicate with stakeholders about your hypotheses and assumptions.
-2. **It is a natural way to define probabilistic models**, where we can incorporate uncertainty in our estimates and predictions. In timeseries forecasting, customer lifetime value estimation, and many other applications, we can construct probabilistic models that naturally incorporate uncertainty and provide a distribution of possible outcomes, rather than just point estimates. This is particularly useful in business applications where understanding the range of possible outcomes is crucial for decision-making.
-   
-3. **We can easily extend our results and compute any function $g(\theta)$ of our estimates**: by using samples from the posterior, we can compute any function of the parameters, such as risk measures, quantiles, or any other transformation of the parameters. For example, you may forecast the posterior the number of sales in day, but easily compute the posterior of the cumulative sales in the next 30 days, or the risk of not reaching a certain sales target.
+## Conclusion
 
