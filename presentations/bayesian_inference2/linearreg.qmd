@@ -1,0 +1,499 @@
+```{python}
+import numpy as np
+import jax
+import jax.numpy as jnp
+import jax.random as random
+
+import numpyro
+import numpyro.distributions as dist
+from numpyro.infer import MCMC, NUTS
+
+
+def simulate_data(key, n_obs=100):
+    """
+    Simulate a simple linear dataset:
+        y = alpha_true + beta_true * x + epsilon,
+    where epsilon ~ Normal(0, sigma_true).
+    """
+    key, subkey = random.split(key)
+    x = random.normal(subkey, (n_obs,)) * 2.0  # independent variable
+
+    key, subkey = random.split(key)
+    # True parameters
+    alpha_true = 1.0
+    beta_true = 2.5 * jnp.ones_like(x) + random.normal(subkey, (n_obs,)) * 1  # slope with some noise
+    sigma_true = 0.5
+
+    key, subkey = random.split(key)
+    eps = sigma_true * random.normal(subkey, (n_obs,))*2
+
+    y = alpha_true + beta_true * x + eps
+    return x, y, (alpha_true, beta_true, sigma_true)
+
+
+def linear_regression_model(x, y=None):
+    """
+    Bayesian linear regression model in NumPyro:
+
+        alpha ~ Normal(0, 10)
+        beta  ~ Normal(0, 10)
+        sigma ~ HalfCauchy(5)
+
+        y_i   ~ Normal(alpha + beta * x_i, sigma)
+    """
+    # Priors on intercept and slope
+    alpha = numpyro.sample("alpha", dist.Normal(0.0, 10.0))
+    beta = numpyro.sample("beta", dist.Normal(0.0, 10.0))
+
+    # Prior on noise scale (sigma > 0)
+    sigma = numpyro.sample("sigma", dist.HalfCauchy(5.0))
+
+    # Likelihood
+    mean = alpha + beta * x
+    with numpyro.plate("data", x.shape[0]):
+        numpyro.sample("obs", dist.Normal(mean, sigma), obs=y)
+
+
+def run_inference(rng_key, model, x, y, num_warmup=1000, num_samples=2000):
+    """
+    Run MCMC/Newton's Adaptive Transition Sampler (NUTS) on the linear regression model.
+    Returns the MCMC object after sampling.
+    """
+    # Set up the NUTS kernel
+    kernel = NUTS(model)
+    # Create MCMC sampler
+    mcmc = MCMC(kernel, num_warmup=num_warmup, num_samples=num_samples)
+    mcmc.run(rng_key, x, y)
+    return mcmc
+```
+
+
+```{python}
+
+from numpyro.infer import MCMC, NUTS, Predictive
+
+# Initialize RNG and simulate data
+rng_key = random.PRNGKey(0)
+x_data, y_data, true_params = simulate_data(rng_key, n_obs=100)
+
+# 3. Prior predictive sampling
+rng_key, subkey = random.split(rng_key)
+prior_predictive = Predictive(linear_regression_model, num_samples=500)
+prior_samples = prior_predictive(subkey, x_data)
+
+# Plot prior predictive lines
+x_plot = jnp.linspace(jnp.min(x_data), jnp.max(x_data), 100)
+plt.figure(figsize=(8, 6))
+plt.scatter(x_data, y_data, color="blue", label="Observed data")
+for i in range(50):
+    a = prior_samples["alpha"][i]
+    b = prior_samples["beta"][i]
+    y_line = a + b * x_plot
+    plt.plot(np.array(x_plot), np.array(y_line), color="gray", alpha=0.3)
+plt.title("Prior Predictive Regression Lines")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.show()
+
+# 4. Run MCMC inference
+rng_key, subkey = random.split(rng_key)
+kernel = NUTS(linear_regression_model)
+mcmc = MCMC(kernel, num_warmup=1000, num_samples=2000)
+mcmc.run(subkey, x_data, y_data)
+posterior_samples = mcmc.get_samples()
+
+# 5. Posterior predictive sampling
+predictive = Predictive(linear_regression_model, posterior_samples)
+rng_key, subkey = random.split(rng_key)
+post_samples = predictive(subkey, x_data)
+
+# Compute posterior predictive statistics
+y_pred = post_samples["obs"]  # shape: (num_samples, n_obs)
+y_mean = jnp.mean(y_pred, axis=0)
+y_perc = jnp.percentile(y_pred, jnp.array([2.5, 97.5]), axis=0)
+
+# Plot posterior predictive
+sorted_idx = jnp.argsort(x_data)
+plt.figure(figsize=(8, 6))
+plt.scatter(x_data, y_data, color="blue", label="Observed data")
+plt.plot(
+    np.array(x_data[sorted_idx]),
+    np.array(y_mean[sorted_idx]),
+    color="red",
+    label="Predicted mean",
+)
+plt.fill_between(
+    np.array(x_data[sorted_idx]),
+    np.array(y_perc[0][sorted_idx]),
+    np.array(y_perc[1][sorted_idx]),
+    color="red",
+    alpha=0.3,
+    label="95% CI",
+)
+plt.title("Posterior Predictive with 95% Credible Intervals")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
+
+
+# 6. Plot posterior regression lines (using posterior samples of alpha and beta)
+x_plot = jnp.linspace(jnp.min(x_data) - 3, jnp.max(x_data) + 3, 100)
+plt.figure(figsize=(8, 6))
+for i in range(10):
+    a = posterior_samples["alpha"][i]
+    b = posterior_samples["beta"][i]
+    y_line = a + b * x_plot
+    plt.plot(np.array(x_plot), np.array(y_line), color="gray", alpha=0.3)
+# Also overlay the data points
+plt.scatter(x_data, y_data, color="blue", s=20, label="Observed data")
+plt.title("Posterior Regression Lines (50 random draws)")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
+```
+
+```{python}
+# 1. PRIOR PREDICTIVE ON x_plot (instead of x_data)
+rng_key, subkey = random.split(rng_key)
+prior_predictive = Predictive(linear_regression_model, num_samples=500)
+prior_samples_on_data = prior_predictive(subkey, x_data)       # used earlier for lines if desired
+
+# Now re‐draw for the grid x_plot:
+rng_key, subkey = random.split(rng_key)
+prior_samples_on_grid = prior_predictive(subkey, x_plot)
+
+# “obs” has shape (500, 100)  ←  (num_prior_samples, len(x_plot))
+y_pp = prior_samples_on_grid["obs"]   # prior predictive draws (with noise)
+
+# Compute the 2.5th and 97.5th percentiles across the 500 draws, for each x_plot
+y_lo, y_hi = jnp.percentile(y_pp, jnp.array([2.5, 97.5]), axis=0)  # each has shape (100,)
+
+# (Optional) Compute the prior predictive median or mean (for a “central” curve)
+y_med = jnp.percentile(y_pp, 50.0, axis=0)  # shape (100,)
+
+# 2. PLOT PRIOR PREDICTIVE INTERVALS
+plt.figure(figsize=(8, 6))
+
+# Plot the 95% shaded interval:
+plt.fill_between(
+    np.array(x_plot),
+    np.array(y_lo),
+    np.array(y_hi),
+    color="gray",
+    alpha=0.3,
+    label="Prior predictive 95% interval",
+)
+
+# (Optional) Overplot the median
+plt.plot(
+    np.array(x_plot),
+    np.array(y_med),
+    color="black",
+    linestyle="--",
+    label="Prior predictive median",
+)
+
+# (Optional) If you still want a handful of random “lines”:
+for i in np.random.choice(500, size=20, replace=False):
+    a_i = prior_samples_on_grid["alpha"][i]
+    b_i = prior_samples_on_grid["beta"][i]
+    plt.plot(
+        np.array(x_plot),
+        np.array(a_i + b_i * x_plot),
+        color="gray",
+        alpha=0.2,
+    )
+
+# Scatter the observed data as a reference
+plt.scatter(x_data, y_data, color="blue", label="Observed data", s=15)
+
+plt.title("Prior Predictive with 95% Interval")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
+```
+
+
+```{python}
+import numpy as np
+import jax
+import jax.random as random
+import jax.numpy as jnp
+
+import numpyro
+import numpyro.distributions as dist
+from numpyro.infer import MCMC, NUTS, Predictive
+
+import matplotlib.pyplot as plt
+
+
+# 1. Simulate the same toy linear data
+def simulate_data(key, n_obs=100):
+    key, subkey = random.split(key)
+    x = random.normal(subkey, (n_obs,)) * 2.0  # independent variable
+
+    # True parameters (for generating y)
+    alpha_true = 1.0
+    beta_true = 2.5
+    sigma_true = 0.5
+
+    key, subkey = random.split(key)
+    eps = sigma_true * random.normal(subkey, (n_obs,))
+
+    y = alpha_true + beta_true * x + eps
+    return x[:, None], y  # we return x with shape (n_obs, 1) for a 1-D input
+
+
+def bnn_mean(x, W1, b1, W2, b2):
+    """
+    Compute the mean output of a 2-layer BNN given inputs x and parameters.
+    """
+    hidden_lin = jnp.matmul(W1, x.T) + b1[:, None]  # shape (hidden_dim, n_obs)
+    hidden = jnp.tanh(hidden_lin)  # apply tanh activation
+    out_lin = jnp.matmul(W2, hidden) + b2[:, None]  # shape (1, n_obs)
+    return out_lin.squeeze()  # shape (n_obs,)
+
+
+# 2. Define a 2-layer Bayesian Neural Network model
+def bnn_regression_model(x, y=None, hidden_dim=10):
+    """
+    A simple 2-layer Bayesian neural network:
+      - Input dimension: 1
+      - Hidden dimension: hidden_dim (default 10)
+      - Output dimension: 1
+
+    Priors:
+      W1 ~ Normal(0, 1)            shape = (hidden_dim, 1)
+      b1 ~ Normal(0, 1)            shape = (hidden_dim,)
+      W2 ~ Normal(0, 1)            shape = (1, hidden_dim)
+      b2 ~ Normal(0, 1)            shape = (1,)
+
+      sigma ~ HalfCauchy(5)
+
+    Forward pass:
+      h = tanh(W1 @ x + b1)         shape = (hidden_dim, n_obs)
+      out = W2 @ h + b2             shape = (1, n_obs)
+      y_i ~ Normal(out_i, sigma)
+    """
+    n_obs, input_dim = x.shape  # input_dim should be 1 here
+
+    # Layer 1 weights and biases
+    W1 = numpyro.sample(
+        "W1",
+        dist.Normal(
+            jnp.zeros((hidden_dim, input_dim)), jnp.ones((hidden_dim, input_dim))
+        ),
+    )
+    b1 = numpyro.sample(
+        "b1", dist.Normal(jnp.zeros((hidden_dim,)), jnp.ones((hidden_dim,)))
+    )
+
+    # Layer 2 weights and biases
+    W2 = numpyro.sample(
+        "W2", dist.Normal(jnp.zeros((1, hidden_dim)), jnp.ones((1, hidden_dim)))
+    )
+    b2 = numpyro.sample("b2", dist.Normal(jnp.zeros((1,)), jnp.ones((1,))))
+
+    # Noise scale
+    sigma = numpyro.sample("sigma", dist.HalfCauchy(5.0))
+
+    out = bnn_mean(x, W1, b1, W2, b2)  # shape (n_obs,)
+
+    # Likelihood (observe y if provided)
+    with numpyro.plate("data", n_obs):
+        numpyro.sample("obs", dist.Normal(out, sigma), obs=y)
+
+
+# 3. Run MCMC inference on the BNN
+def run_bnn_inference(rng_key, x, y, hidden_dim=10, num_warmup=1000, num_samples=2000):
+    """
+    Sets up NUTS and runs MCMC to sample from the posterior of the BNN parameters.
+    """
+    # Bind hidden_dim via a lambda so NUTS knows the signature
+    model = lambda x, y=None: bnn_regression_model(x, y, hidden_dim=hidden_dim)
+    kernel = NUTS(model)
+    mcmc = MCMC(kernel, num_warmup=num_warmup, num_samples=num_samples)
+    mcmc.run(rng_key, x, y)
+    return mcmc
+
+
+# Initialize RNG and simulate data
+rng_key = random.PRNGKey(0)
+x_data, y_data = simulate_data(rng_key, n_obs=100)
+
+# Run MCMC to sample from the BNN posterior
+rng_key, subkey = random.split(rng_key)
+hidden_dim = 10
+mcmc_bnn = run_bnn_inference(
+    subkey, x_data, y_data, hidden_dim=hidden_dim, num_warmup=1000, num_samples=2000
+)
+
+# Print a summary of posterior samples
+mcmc_bnn.print_summary()
+
+# 4. Posterior predictive sampling (optional)
+posterior_samples = mcmc_bnn.get_samples()
+predictive = Predictive(
+    lambda x, y=None: bnn_regression_model(x, y, hidden_dim=hidden_dim),
+    posterior_samples,
+)
+rng_key, subkey = random.split(rng_key)
+post_pred = predictive(subkey, x_data)
+
+# Compute posterior predictive mean and 95% interval
+y_pred = post_pred["obs"]  # shape = (num_samples, n_obs)
+y_mean = jnp.mean(y_pred, axis=0)
+y_perc = jnp.percentile(y_pred, jnp.array([2.5, 97.5]), axis=0)
+
+# Plot data + posterior predictive
+sorted_idx = jnp.argsort(x_data.squeeze())
+x_plot = x_data.squeeze()[sorted_idx]
+plt.figure(figsize=(8, 6))
+plt.scatter(x_data, y_data, color="blue", label="Observed data")
+plt.plot(x_plot, y_mean[sorted_idx], color="red", label="Predicted mean")
+plt.fill_between(
+    x_plot,
+    y_perc[0][sorted_idx],
+    y_perc[1][sorted_idx],
+    color="red",
+    alpha=0.3,
+    label="95% CI",
+)
+plt.title("BNN Posterior Predictive")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
+
+```
+
+
+```{python}
+import numpy as np
+import jax
+import jax.random as random
+import jax.numpy as jnp
+
+import numpyro
+import numpyro.distributions as dist
+from numpyro.infer import MCMC, NUTS, Predictive
+
+import matplotlib.pyplot as plt
+
+# (Assume bnn_regression_model and simulate_data are defined exactly as in your snippet.)
+
+# --- (1) SIMULATE DATA AS BEFORE ---
+rng_key = random.PRNGKey(0)
+x_data, y_data = simulate_data(rng_key, n_obs=100)  # x_data has shape (100,1), y_data shape (100,)
+
+# Create a dense x‐grid for plotting “curves”:
+x_plot = jnp.linspace(jnp.min(x_data)-3, jnp.max(x_data)+3, 200)
+x_plot = x_plot.reshape(-1, 1)  # shape (200,1)
+
+# --- (2) PRIOR PREDICTIVE SAMPLING FOR BNN ---
+# We do not pass any y‐observations here, so Predictive will sample from the prior.
+num_prior_samples = 500
+rng_key, subkey = random.split(rng_key)
+prior_pred = Predictive(lambda x, y=None: bnn_regression_model(x, y, hidden_dim=10),
+                        num_samples=num_prior_samples)
+# Run prior predictive at x_plot:
+prior_samples = prior_pred(subkey, x_plot)
+
+# Extract just the “noiseless” network output if you want the deterministic function:
+#    In our model, the likelihood is y ~ Normal(out, sigma).  If you want to plot the “mean”
+#    (i.e. f(x) = W2 tanh(W1 x + b1) + b2) you can compute that manually from W1,b1,W2,b2.
+#    But here, prior_samples["obs"] already includes noise.  If you prefer to see f(x) w/o noise,
+#    do something like the following:
+def bnn_mean_fn(params, x):
+    W1, b1, W2, b2 = params["W1"], params["b1"], params["W2"], params["b2"]
+    hidden_lin = jnp.matmul(W1, x.T) + b1[:, None]
+    hidden = jnp.tanh(hidden_lin)
+    out_lin = jnp.matmul(W2, hidden) + b2[:, None]
+    return out_lin.squeeze()  # shape (n_points,)
+
+# Choose a small subset of prior draws to plot:
+n_draws_to_plot = 20
+idxs = np.random.choice(num_prior_samples, size=n_draws_to_plot, replace=False)
+
+plt.figure(figsize=(8, 6))
+# Plot a few prior “mean” curves:
+for i in idxs:
+    params_i = {k: prior_samples[k][i] for k in ["W1", "b1", "W2", "b2"]}
+    y_curve = bnn_mean_fn(params_i, x_plot)   # shape (200,)
+    plt.plot(np.array(x_plot).squeeze(), np.array(y_curve), color="gray", alpha=0.3)
+
+# Optionally overlay a few “noisy” curves (i.e. including the sampled σ and noise)
+# by plotting prior_samples["obs"][i] vs x_plot as light points or faint lines. 
+# Here we stick to the noiseless “mean” to see the prior functions' shape.
+
+plt.scatter(x_data.squeeze(), y_data, color="blue", label="Observed data")
+plt.title("BNN Prior‐Predictive Functions (20 draws)")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
+
+# --- (3) RUN MCMC / POSTERIOR INFERENCE ON BNN AS BEFORE ---
+rng_key, subkey = random.split(rng_key)
+hidden_dim = 10
+mcmc_bnn = run_bnn_inference(subkey, x_data, y_data,
+                             hidden_dim=hidden_dim,
+                             num_warmup=1000, num_samples=2000)
+
+# (Optional) Print a brief summary if you like
+mcmc_bnn.print_summary()
+
+# --- (4) POSTERIOR PREDICTIVE SAMPLING ON BNN ---
+posterior_samples = mcmc_bnn.get_samples()
+# Build a Predictive object that uses those posterior draws:
+predictive = Predictive(lambda x, y=None: bnn_regression_model(x, y, hidden_dim=hidden_dim),
+                        posterior_samples)
+rng_key, subkey = random.split(rng_key)
+post_pred = predictive(subkey, x_plot)  # shape: {"obs": array((2000, 200)), ...}
+
+# Again, if you want the “mean” f(x) without noise, compute it directly from each posterior draw.
+y_pred_noiseless = []
+for i in range(20):   # pick 20 random posterior draws to visualize
+    params_i = {k: posterior_samples[k][i] for k in ["W1", "b1", "W2", "b2"]}
+    y_curve = bnn_mean_fn(params_i, x_plot)
+    y_pred_noiseless.append(np.array(y_curve))
+
+y_pred_noiseless = np.stack(y_pred_noiseless, axis=0)  # shape (20, 200)
+
+plt.figure(figsize=(8, 6))
+for i in range(20):
+    plt.plot(np.array(x_plot).squeeze(), y_pred_noiseless[i], color="gray", alpha=0.3)
+
+# If you also want to display the observed data points & the posterior mean ± 95%‐CI:
+# Compute the posterior predictive mean and credible interval (including noise):
+y_obs_samples = post_pred["obs"]  # shape (2000, 200)
+y_mean = jnp.mean(y_obs_samples, axis=0)            # shape (200,)
+y_lo, y_hi = jnp.percentile(y_obs_samples, jnp.array([2.5, 97.5]), axis=0)  # each shape (200,)
+
+sorted_idx = np.argsort(np.array(x_plot).squeeze())
+plt.scatter(x_data.squeeze(), y_data, color="blue", s=20, label="Observed data")
+plt.plot(
+    np.array(x_plot).squeeze()[sorted_idx],
+    np.array(y_mean)[sorted_idx],
+    color="red",
+    label="Posterior predictive mean"
+)
+plt.fill_between(
+    np.array(x_plot).squeeze()[sorted_idx],
+    np.array(y_lo)[sorted_idx],
+    np.array(y_hi)[sorted_idx],
+    color="red",
+    alpha=0.1,
+    label="95% CI"
+)
+
+plt.title("BNN Posterior‐Predictive (20 function draws + mean ± 95% CI)")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
+
+```

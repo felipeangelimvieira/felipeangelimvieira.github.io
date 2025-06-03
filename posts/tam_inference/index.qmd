@@ -5,8 +5,341 @@ format:
     toc: true
     toc-depth: 4
     toc-expand: 4
+draft: true
 author: "Felipe Angelim"
 date: "2025-05-29"
 categories: [machine learning, bayesian inference]
 jupyter: python3
 ---
+
+
+```python
+import jax
+import jax.numpy as jnp
+import matplotlib.pyplot as plt
+import numpy as np
+# from numpyro.distributions.util import validate_sample, promote_shapes 
+# promote_shapes is usually an internal utility or part of the base Distribution class logic.
+# For this script, we'll rely on JAX's broadcasting or simple scalar inputs per plot line.
+from numpyro import distributions as dist
+from numpyro.distributions.util import validate_sample # validate_sample is available
+from jax import lax
+
+# Placeholder for promote_shapes if it were needed explicitly here.
+# JAX handles broadcasting for most operations if shapes are compatible.
+# For plotting distinct lines, we typically use scalar parameters for each call.
+def promote_shapes(*args):
+    """A simple promote_shapes placeholder for broadcastable JAX arrays."""
+    if not args:
+        return ()
+    if len(args) == 1:
+        return args
+    try:
+        return jnp.broadcast_arrays(*args)
+    except ValueError:
+        # This is not a robust promote_shapes, just to allow the script to run.
+        print("Warning: promote_shapes fallback used. Ensure parameters are scalar for distinct plot lines or correctly batched.")
+        return args
+
+class DiscreteWeibull(dist.Distribution):
+    arg_constraints = {
+        "alpha": dist.constraints.positive,
+        "beta": dist.constraints.positive,
+    }
+    support = dist.constraints.integer_greater_than(0) # k = 1, 2, 3, ...
+    # has_rsample = False # Sampling method involves rounding, typically non-reparameterizable.
+    # reparametrized_params = ["alpha", "beta"] # Should be removed if not reparameterizable
+
+    def __init__(self, alpha, beta, eps = 1e-10, *, validate_args=None):
+        self.eps = eps
+        
+        # Ensure inputs are JAX arrays for consistency
+        _alpha = jnp.asarray(alpha)
+        _beta = jnp.asarray(beta)
+        
+        # Store original parameters after basic JAX conversion
+        self.alpha, self.beta = promote_shapes(_alpha, _beta) # Uses placeholder
+        
+        batch_shape = lax.broadcast_shapes(jnp.shape(_alpha), jnp.shape(_beta))
+        super().__init__(batch_shape=batch_shape, event_shape=(), validate_args=validate_args)
+
+    @validate_sample
+    def log_prob(self, value):
+        # value is k = 1, 2, 3, ...
+        # PMF P(X=k) = S(k) - S(k+1) where S(k) = exp(-(k/alpha)^beta)
+        # This formulation traditionally applies to k=0, 1, 2,...
+        # If support is k >= 1, P(X=k) = CDF(k) - CDF(k-1)
+        # CDF(k) = 1 - exp(-((k+1)/alpha)^beta) for k >= 0.
+        # So for k >= 1:
+        # P(X=k) = [1 - exp(-((k+1)/alpha)^beta)] - [1 - exp(-((k-1+1)/alpha)^beta)]
+        #        = exp(-(k/alpha)^beta) - exp(-((k+1)/alpha)^beta)
+        
+        # The class's definition uses value+eps for k in the S(k) formula.
+        k_eff = jnp.asarray(value) + self.eps 
+
+        term1 = jnp.exp(-jnp.power(k_eff / self.alpha, self.beta))
+        term2 = jnp.exp(-jnp.power((k_eff + 1) / self.alpha, self.beta))
+        pmf = term1 - term2
+        
+        # Clip pmf to be slightly positive to avoid log(0) or log(negative) due to precision
+        pmf_clipped = jnp.clip(pmf, a_min=self.eps) # Using self.eps as min value
+        return jnp.log(pmf_clipped)
+
+    def inverse_discrete_weibull(self, p_uniform):
+        # Based on CDF F(k) = 1 - exp(-((k+1)/alpha)**beta)
+        # p = F(k) => k = alpha * (-log(1-p))**(1/beta) - 1
+        p_clipped = jnp.clip(p_uniform, a_min=self.eps, a_max=1.0 - self.eps) # Avoid log(0) or log(negative)
+        k_continuous = self.alpha * (-jnp.log(1 - p_clipped))**(1 / self.beta) - 1
+        return jnp.round(k_continuous)
+
+    def sample(self, key, sample_shape=()):
+        _sample_shape = sample_shape + self.batch_shape
+        p_uniform = jax.random.uniform(key, shape=_sample_shape)
+        
+        sampled_values = self.inverse_discrete_weibull(p_uniform)
+        
+        # Ensure samples are within support (k >= 1)
+        return jnp.maximum(1, sampled_values).astype(jnp.int32)
+
+    def cdf(self, value):
+        # CDF F(k) = P(X <= k) = 1 - exp(-((k+1)/alpha)^beta), for k >= 0.
+        # As support is k >= 1, 'value' will be 1, 2, ...
+        k = jnp.asarray(value)
+        return 1 - jnp.exp(-jnp.power((k + 1) / self.alpha, self.beta))
+
+# --- Plotting Parameters ---
+param_sets = [
+    {"alpha": 5.0, "beta": 1.0, "label": r"$\alpha=5, \beta=1$"},
+    {"alpha": 5.0, "beta": 2.0, "label": r"$\alpha=5, \beta=2$"},
+    {"alpha": 10.0, "beta": 1.0, "label": r"$\alpha=10, \beta=1$"},
+    {"alpha": 10.0, "beta": 2.0, "label": r"$\alpha=10, \beta=2$"},
+    {"alpha": 7.0, "beta": 0.8, "label": r"$\alpha=7, \beta=0.8$"},
+    {"alpha": 5.0, "beta": 5.0, "label": r"$\alpha=5, \beta=5$"},
+    {"alpha": 5.0, "beta": 8.0, "label": r"$\alpha=5, \beta=8$"},
+]
+x_max = 40
+x_values_np = np.arange(1, x_max + 1) # Integers from 1 to x_max
+x_values_jnp = jnp.array(x_values_np)
+
+
+# --- 1. Plotting CDF ---
+plt.figure(figsize=(12, 10))
+
+plt.subplot(2, 1, 1) # Create subplot for CDF
+for params in param_sets:
+    dist_instance = DiscreteWeibull(alpha=params["alpha"], beta=params["beta"])
+    cdf_values = dist_instance.cdf(x_values_jnp)
+    plt.step(x_values_np, cdf_values, where='post', label=params["label"])
+
+plt.title("Discrete Weibull CDF for Different Parameters")
+plt.xlabel("k (value)")
+plt.ylabel("CDF: P(X <= k)")
+plt.xticks(np.arange(0, x_max + 5, 5))
+plt.yticks(np.arange(0, 1.1, 0.1))
+plt.legend()
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+# --- 2. Plotting PMF ---
+plt.subplot(2, 1, 2) # Create subplot for PMF
+for params in param_sets:
+    dist_instance = DiscreteWeibull(alpha=params["alpha"], beta=params["beta"])
+    
+    # Calculate PMF values: PMF(k) = exp(log_prob(k))
+    log_prob_values = dist_instance.log_prob(x_values_jnp)
+    pmf_values = jnp.exp(log_prob_values)
+    
+    # Plot PMF. Using lines with markers for clarity with multiple distributions.
+    # A bar chart could also be used but might get crowded.
+    plt.plot(x_values_np, pmf_values, marker='o', linestyle='-', markersize=4, label=params["label"])
+
+plt.title("Discrete Weibull PMF for Different Parameters")
+plt.xlabel("k (value)")
+plt.ylabel("PMF: P(X = k)")
+plt.xticks(np.arange(0, x_max + 5, 5))
+plt.legend()
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+plt.tight_layout() # Adjust layout to prevent overlapping titles/labels
+plt.show()
+
+# --- Optional: Test sampling and log_prob for one instance ---
+if False: # Set to True to run this test block
+    print("\n--- Optional Test Block ---")
+    test_params = {"alpha": 5.0, "beta": 1.0}
+    test_dist = DiscreteWeibull(alpha=jnp.array(test_params["alpha"]), beta=jnp.array(test_params["beta"]))
+    
+    key = jax.random.PRNGKey(42)
+    num_samples = 10
+    samples = test_dist.sample(key, (num_samples,))
+    print(f"Test Samples (alpha={test_params['alpha']}, beta={test_params['beta']}): {samples}")
+    
+    test_values_for_log_prob = jnp.array([1, 2, 3, 5, 10])
+    log_probs = test_dist.log_prob(test_values_for_log_prob)
+    print(f"Log Probs for values {test_values_for_log_prob}: {log_probs}")
+    print(f"Probs for values {test_values_for_log_prob}: {jnp.exp(log_probs)}")
+
+    # Check sum of PMF over a practical range (should be < 1 as support is infinite)
+    k_range_for_sum = jnp.arange(1, 201) # Sum PMF from k=1 to k=200
+    pmf_sum = jnp.sum(jnp.exp(test_dist.log_prob(k_range_for_sum)))
+    print(f"Sum of PMF for k=1 to k=200: {pmf_sum:.4f} (should be close to CDF at k=200)")
+    print(f"CDF at k=200: {test_dist.cdf(jnp.array(200)):.4f}")
+```
+
+```python
+
+import numpyro
+import numpyro.distributions as dist
+import jax.numpy as jnp
+from jax.scipy.special import gammaln  # For log binomial coefficient
+import jax.random
+from numpyro.infer import MCMC, NUTS
+
+
+def registration_model_N_random(M_registration_times, T_max, expected_N_extra_rate=1.0):
+    """
+    NumPyro model for registration times with N_total as a random variable.
+
+    Args:
+        M_registration_times (jnp.ndarray): Array of M observed continuous registration times.
+        T_max (float): Censoring time (end of study or max(M_registration_times)).
+        expected_N_extra_rate (float): Hyperparameter for the Poisson prior on N_extra.
+                                     This influences the expected number of clients
+                                     beyond those already observed.
+    """
+    M_observed = M_registration_times.shape[0]
+
+    # 1. Prior for N_total = M_observed + N_extra
+    # N_extra is the number of clients beyond those observed.
+    # It must be non-negative. A Poisson prior is a common choice.
+    # The rate of this Poisson (expected_N_extra_rate) can be a fixed hyperparameter,
+    # or itself have a hyperprior if more uncertainty is desired.
+    N_extra = numpyro.sample("N_extra", dist.Poisson(expected_N_extra_rate))
+    N_total = M_observed + N_extra
+    # N_total is now a random variable in the model.
+
+    # 2. Priors for Weibull distribution parameters (theta)
+    # wb_scale (alpha in some notations): Characteristic life / scale parameter > 0
+    wb_scale = numpyro.sample("wb_scale", dist.HalfCauchy(1.0))
+    # wb_concentration (beta or k in some notations): Shape parameter > 0
+    wb_concentration = numpyro.sample("wb_concentration", dist.HalfCauchy(1.0))
+
+    # Define the underlying registration time distribution
+    time_dist = dist.Weibull(scale=wb_scale, concentration=wb_concentration)
+
+    # 3. Likelihood for observed M registration times: sum(log f(t_i | theta))
+    # This is handled by NumPyro when 'obs' argument is provided.
+    numpyro.sample("observed_times_loglik", time_dist, obs=M_registration_times)
+
+    # 4. Likelihood term for N_extra = (N_total - M_observed) censored clients
+    # These are clients who would register after T_max.
+    # We need log S(T_max | theta) = log(P(Time > T_max | theta))
+    # For Weibull, S(t) = exp(-(t/scale)^concentration),
+    # so logS(t) = -(t/scale)^concentration
+    log_survival_at_T_max = -jnp.power(T_max / wb_scale, wb_concentration)
+
+    # This term is N_extra * log_survival_at_T_max
+    # (If N_extra is 0, this term correctly becomes 0)
+    numpyro.factor("censored_clients_loglik_factor", N_extra * log_survival_at_T_max)
+
+    # 5. Log binomial coefficient: log C(N_total, M_observed)
+    # This accounts for choosing M observed clients out of N_total.
+    # log(N! / (M! * (N-M)!)) = gammaln(N+1) - gammaln(M+1) - gammaln(N-M+1)
+    # Note: N_total - M_observed = N_extra
+    # Add 1.0 to arguments of gammaln for precision with JAX, as it expects floats.
+    log_binom_coeff = gammaln(N_total + 1.0) - (
+        gammaln(M_observed + 1.0) + gammaln(N_extra + 1.0)
+    )
+    numpyro.factor("log_binom_coeff_factor", log_binom_coeff)
+
+
+# --- Example Usage ---
+if True:
+    # Generate some dummy data for demonstration
+    key_data_gen, key_mcmc_run = jax.random.split(jax.random.PRNGKey(0))
+
+    # True parameters (for data generation - in a real scenario, these are unknown)
+    true_wb_scale = 20.0
+    true_wb_concentration = 1.5
+    true_N_total = 100  # True total number of clients
+
+    # Observation period ends at T_max_data
+    T_max_data = 30.0
+
+    # Simulate data
+    # Generate N_total registration times from the true Weibull
+    all_potential_times = dist.Weibull(true_wb_scale, true_wb_concentration).sample(
+        key_data_gen, (true_N_total,)
+    )
+
+    # Select those that occurred before T_max_data
+    M_times_data = all_potential_times[all_potential_times <= T_max_data]
+    M_observed_val = M_times_data.shape[0]
+
+    print(f"--- Data Generation ---")
+    print(f"True total N: {true_N_total}")
+    print(
+        f"True Weibull scale: {true_wb_scale}, concentration: {true_wb_concentration}"
+    )
+    print(f"Observation window ends at T_max: {T_max_data}")
+    print(f"Number of clients registered by T_max (M_observed): {M_observed_val}")
+    if M_observed_val > 0:
+        print(f"Observed registration times (first 5): {M_times_data[:5]}")
+    else:
+        print("No clients registered by T_max in this simulation.")
+        # Note: If M_observed_val is 0, the model might struggle or give trivial results.
+        # The Poisson prior on N_extra might need a higher rate if M_observed is often low.
+
+    if M_observed_val == 0:
+        print(
+            "\nWarning: M_observed is 0. The model may not run well or priors will dominate."
+        )
+        print(
+            "Consider increasing T_max, true_N_total, or adjusting Weibull parameters for data generation."
+        )
+    else:
+        print(f"\n--- Running MCMC ---")
+        # Set a prior expectation for N_extra.
+        # This can be an educated guess, e.g., similar to M_observed, or a small number if saturation is expected.
+        # A rate of 1.0 is a weak prior if M_observed is small.
+        # If M_observed is larger, a larger rate might be appropriate.
+        # For this example, let's guess that N_extra might be similar to M_observed.
+        prior_N_extra_rate = float(M_observed_val) if M_observed_val > 0 else 1.0
+
+        # Initialize NUTS kernel
+        nuts_kernel = NUTS(registration_model_N_random)
+
+        # MCMC sampler
+        mcmc = MCMC(nuts_kernel, num_warmup=500, num_samples=1000, progress_bar=True)
+
+        # Run MCMC
+        mcmc.run(
+            key_mcmc_run,
+            M_registration_times=M_times_data,
+            T_max=T_max_data,
+            expected_N_extra_rate=prior_N_extra_rate,
+        )  # Pass the prior rate
+
+        # Print summary of posterior samples
+        print("\n--- MCMC Summary ---")
+        mcmc.print_summary()
+
+        # Analyze posterior for N_total
+        samples = mcmc.get_samples()
+        N_extra_samples = samples["N_extra"]
+        N_total_samples = M_observed_val + N_extra_samples
+
+        print("\n--- Posterior Analysis for N_total ---")
+        print(f"Observed M: {M_observed_val}")
+        print(f"Posterior mean for N_extra: {jnp.mean(N_extra_samples):.2f}")
+        print(
+            f"Posterior mean for N_total: {jnp.mean(N_total_samples):.2f} (True N_total was {true_N_total})"
+        )
+
+        percentiles_N_total = jnp.percentile(
+            N_total_samples, jnp.array([5.0, 50.0, 95.0])
+        )
+        print(
+            f"Posterior 5th, 50th (median), 95th percentiles for N_total: "
+            f"{percentiles_N_total[0]:.2f}, {percentiles_N_total[1]:.2f}, {percentiles_N_total[2]:.2f}"
+        )
+```
