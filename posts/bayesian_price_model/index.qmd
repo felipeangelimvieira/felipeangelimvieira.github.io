@@ -162,15 +162,15 @@ key = jax.random.PRNGKey(0)
 # split the key so we get fresh randomness for price, region, and labels
 key, key_price, key_region, key_y = jax.random.split(key, 4)
 
-n_regions, n_obs = 4, 400
-true_p50 = jnp.array([10.0, 12.0, 9.0, 15.0])
+n_regions, n_obs = 4, 200
+true_p50 = jnp.array([10.0, 12.0, 9.0, 11.0])
 true_n = jnp.array([2.0, 1.8, 2.5, 1.6]) * 4
 
 # 1) sample prices as before
 price = jax.random.uniform(key_price, (n_obs,), minval=0.0, maxval=20.0)
 
 # 2) define region probabilities (last region only 5%)
-region_probs = jnp.array([0.3, 0.3, 0.35, 0.05])
+region_probs = jnp.array([0.2, 0.2, 0.57, 0.03])
 region_idx = jax.random.choice(
     key_region, jnp.arange(n_regions), shape=(n_obs,), p=region_probs
 )
@@ -200,6 +200,7 @@ plot_colors = [cmap(i) for i in range(n_regions)]
 
 ## 2. Model Without Pooling (No-Pooling Approach)
 
+
 We begin by fitting a **no-pooling** model. We consider a logistic-like curve for the purchave probability:
 
 $$
@@ -213,14 +214,28 @@ where:
 
 This approach treats each region entirely independently, meaning each region will have its own separate prior on `p50` and `slope`, without sharing information across groups. This will serve as a baseline to understand the behavior of each region when modeled in isolation.
 
+$$
+y_i \;\sim\; \mathrm{Bernoulli}(p_i) 
+$$
+
+$$
+p_{50} \;\sim\; \mathrm{HalfNormal}(20), 
+$$
+
+$$
+lambda \;\sim\; \mathrm{HalfNormal}(1000) \; slope = \log(1 + \lambda)
+$$
+
 ```{python}
 # | code-fold: true
 # | code-summary: "Define the no-pooling model"
 def model_no_pool(price, region, n_regions=4, y=None):
     # Independent priors per region (no hyperpriors)
     with numpyro.plate("regions", n_regions):
-        slope_i = numpyro.sample("slope_i", dist.HalfNormal(1000.0))
+        slope_i = numpyro.sample("slope_i_inner", dist.HalfNormal(1000.0))
         p50_i = numpyro.sample("p50_i", dist.HalfNormal(20.0))
+
+    slope_i = numpyro.deterministic("slope_i", jnp.log1p(slope_i))
 
     p = 1 / (1 + (price / p50_i[region]) ** slope_i[region])
     with numpyro.plate("observations", len(price)):
@@ -265,6 +280,21 @@ Our hierarchical Bayesian model allows each region to have its own logistic-like
 * **`slope`**: Controls the steepness of the curve.
 
 These parameters vary across regions and are drawn from hyperpriors, capturing similarities and differences across groups. This approach contrasts with the no-pooling model by allowing regions to "borrow strength" from each other, which can be particularly useful for imbalanced data.
+
+$$
+\sigma_{p_{50}} \;\sim\; \mathrm{HalfNormal}(20), 
+\quad
+\sigma_{\text{slope}} \;\sim\; \mathrm{HalfNormal}(1000)
+$$
+
+$$
+p_{50,j} \;\sim\; \mathrm{HalfNormal}\bigl(\sigma_{p_{50}}\bigr), 
+\quad 
+\tilde{\lambda}_j \;\sim\; \mathrm{HalfNormal}\bigl(\sigma_{\text{slope}}\bigr), 
+\quad 
+slope_{j} \;=\; \log\bigl(1 + \tilde{\lambda}_j\bigr), 
+\quad j=0,\dots,J-1 \\[1ex]
+$$
 
 ```{python}
 # | code-fold: true
