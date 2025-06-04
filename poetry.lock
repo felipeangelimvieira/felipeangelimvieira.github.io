@@ -809,8 +809,8 @@ pandas = ">=1.0"
 scipy = ">=1.6"
 typing-extensions = ">=4.2.0"
 wrapt = [
-    {version = ">=1.17.0rc1", markers = "python_version >= \"3.13\""},
     {version = ">=1.0", markers = "python_version < \"3.13\""},
+    {version = ">=1.17.0rc1", markers = "python_version >= \"3.13\""},
 ]
 
 [package.extras]
@@ -1829,8 +1829,8 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=2.1.0", markers = "python_version >= \"3.13\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\" and python_version < \"3.13\""},
+    {version = ">=2.1.0", markers = "python_version >= \"3.13\""},
     {version = ">=1.23.3", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
 ]
 
@@ -3612,4 +3612,4 @@ test = ["hypothesis", "packaging", "preliz (>=0.19)", "pytest", "pytest-cov", "s
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "8b38e995cb4b5ed9b5c70037de3a0c771d443e051f226d5d65c19418705aaf5f"
+content-hash = "fc640ea9ef1b01608910160d0a245439683177ed55193ac956723d8febb48f85"
