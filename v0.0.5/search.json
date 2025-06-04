@@ -1,0 +1,191 @@
+[
+  {
+    "objectID": "presentations.html",
+    "href": "presentations.html",
+    "title": "Presentations",
+    "section": "",
+    "text": "Bayesian Inference - Introduction with Applications\n\n\n\n\n\n\n\n\nFelipe Angelim\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "blog.html",
+    "href": "blog.html",
+    "title": "Bytes of Thoughts",
+    "section": "",
+    "text": "No matching items"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "About",
+    "section": "",
+    "text": "Hey there. Here I talk about science, data, and other things. Opinions expressed are my own.\nTech Lead @ Mercado Livre, Core Dev @ sktime (pro bono) and developer/creator of Prophetverse."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#about-me",
+    "href": "presentations/bayesian_inference/index.html#about-me",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "About me",
+    "text": "About me\n\n\n\n\n\n\n\n\n\nFelipe Angelim\n\n\nTech Lead @ Mercado Libre\n\n\nCore Dev @ Sktime\n\n\nCreator/Dev @ Prophetverse\n\n\nfelipeangelim.com"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#agenda",
+    "href": "presentations/bayesian_inference/index.html#agenda",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Agenda",
+    "text": "Agenda\n\nMotivation\nBayes: Priors, posteriors, and likelihoods\nBayesian Inference applications"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#motivation-1",
+    "href": "presentations/bayesian_inference/index.html#motivation-1",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Motivation",
+    "text": "Motivation"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#motivation-2",
+    "href": "presentations/bayesian_inference/index.html#motivation-2",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Motivation",
+    "text": "Motivation\n\n\nScalar number is not enough: we want to quantify uncertainty.\nSmall data requires regularization: with bayesian methods, we use priors and domain knowledge."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#key-ingredients",
+    "href": "presentations/bayesian_inference/index.html#key-ingredients",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Key ingredients",
+    "text": "Key ingredients\nPriors, Posteriors, and Likelihoods\n\\[\n\\underbrace{P(\\theta|X)}_{\\text{Posterior}} = \\frac{\\overbrace{P(X|\\theta)}^{\\text{Likelihood}} \\; \\overbrace{P(\\theta)}^{\\text{Prior}}}{\\underbrace{P(X)}_{\\text{Evidence}}} \\implies \\quad \\quad P(\\theta|X) {\\LARGE \\propto} P(X|\\theta) P(\\theta)\n\\]"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#inference",
+    "href": "presentations/bayesian_inference/index.html#inference",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Inference",
+    "text": "Inference\n\nWe only now how to compute \\(f_X(\\theta) = P(X|\\theta)P(\\theta)\\), that is proportional to the posterior.\nInference methods:\n\nSampling methods: e.g., Markov Chain Monte Carlo (MCMC).\nVariational inference: approximate the posterior with a simpler distribution.\nMaximum a Posteriori (MAP): find the mode of the posterior distribution."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#inference-1",
+    "href": "presentations/bayesian_inference/index.html#inference-1",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Inference",
+    "text": "Inference\nMarkov Chain Monte Carlo (MCMC)\n\n\n\nMarkov Chains: sequence of random events/states, with transition probabilities between them.\nCan have stationary distributions, “equilibrium”.\nIdea: build a chain whose “equilibrium” is the posterior distribution of interest.\nHere Monte Carlo is used to be able to sample from such target distribution."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#inference-2",
+    "href": "presentations/bayesian_inference/index.html#inference-2",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Inference",
+    "text": "Inference\nMarkov Chain Monte Carlo (MCMC)"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#simple-linear-regression",
+    "href": "presentations/bayesian_inference/index.html#simple-linear-regression",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Simple linear regression",
+    "text": "Simple linear regression\n\n\n\\[\n\\alpha \\sim N(0, 10) \\\\\n\\beta \\sim N(0, 10) \\\\\n\\sigma \\sim \\text{HalfCauchy}(5) \\\\\nY_i \\sim N(\\alpha + \\beta X_i, \\sigma)\n\\]\nimport numpyro\nfrom numpyro import distributions as dist\n\ndef linear_regression_model(x, y=None):\n    \n    # Priors on intercept and slope\n    alpha = numpyro.sample(\"alpha\", dist.Normal(0.0, 10.0))\n    beta = numpyro.sample(\"beta\", dist.Normal(0.0, 10.0))\n\n    # Prior on noise scale (sigma &gt; 0)\n    sigma = numpyro.sample(\"sigma\", dist.HalfCauchy(5.0))\n\n    # Likelihood\n    mean = alpha + beta * x\n    with numpyro.plate(\"data\", x.shape[0]):\n        numpyro.sample(\"obs\", dist.Normal(mean, sigma), obs=y)"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#simple-linear-regression-1",
+    "href": "presentations/bayesian_inference/index.html#simple-linear-regression-1",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Simple linear regression",
+    "text": "Simple linear regression\n\n\nfrom numpyro.infer import MCMC, NUTS\nimport jax.random as random\n\n# Random key for reproducibility\nrng_key = random.PRNGKey(0)\n\nkernel = NUTS(linear_regression_model)\nmcmc = MCMC(kernel, num_warmup=1000, num_samples=2000)\nmcmc.run(rng_key, x_data, y_data)\nposterior_samples = mcmc.get_samples()"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#bayesian-neural-networks",
+    "href": "presentations/bayesian_inference/index.html#bayesian-neural-networks",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Bayesian Neural Networks",
+    "text": "Bayesian Neural Networks\n\n\n\nExtend this idea of “random” parameters to neural networks’ weights.\nUse priors on weights, and sample from the posterior distribution.\n\\(weights \\sim N(0, I)\\)"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#inference-3",
+    "href": "presentations/bayesian_inference/index.html#inference-3",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Inference",
+    "text": "Inference\nVariational Inference\n\nWe can also accept that the true posterior may be really hard to compute, and approximate it with a simpler distribution.\nSearch \\(q \\in Q\\) that minimizes the Kullback-Leibler divergence \\(D_{KL}(q || p(\\cdot | X))\\) w.r.t the true posterior.\nVariational inference (VI) provides a fast and approximate solution to the problem.\nNowadays, libraries provide automatic Stochastic Variational Inference (SVI).\nUsually the choice for Bayesian Neural Networks and large datasets."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#inference-4",
+    "href": "presentations/bayesian_inference/index.html#inference-4",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Inference",
+    "text": "Inference\nMaximum A Posteriori (MAP)\n\nFind the mode (maximum) of the posterior distribution.\nNot a full Bayesian inference, but can be useful for fast inference and regularization.\n\n\\[\n\\arg\\max_\\theta P(\\theta | X)\n\\]"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#inference-5",
+    "href": "presentations/bayesian_inference/index.html#inference-5",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Inference",
+    "text": "Inference\nMaximum A Posteriori (MAP)\n\nYou are already using bayes!\nRidge regression, and Lasso, can be obtained from a Bayesian perspective!\nBayesian inference offer a more interpretable vision over regularization.\n\n\n\nRidge regression:\n\\[\nY|X = X\\beta + \\epsilon, \\quad \\epsilon \\sim N(0, \\sigma^2 I) \\\\\n\\hat{\\beta} = \\arg\\min_\\beta \\left\\{ ||y - X\\beta||^2 + \\lambda ||\\beta||^2 \\right\\}\n\\]\n\nBayesian Ridge regression:\n\\[\nY | X \\sim N(X\\beta, \\sigma^2 I) \\\\\n\\beta \\sim N(0, \\frac{I}{\\tau^2}) \\\\\n\\hat{\\beta} = \\arg\\max_\\beta P(\\beta | X, Y)\n\\]"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#you-are-already-using-bayes",
+    "href": "presentations/bayesian_inference/index.html#you-are-already-using-bayes",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "You are already using bayes",
+    "text": "You are already using bayes\n\\[\nP(\\beta)\n\\]"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#total-addressable-market-tam-estimation",
+    "href": "presentations/bayesian_inference/index.html#total-addressable-market-tam-estimation",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Total Addressable market (TAM) estimation",
+    "text": "Total Addressable market (TAM) estimation\n\nProblem: Estimate the total number of potential users/customers in a market.\nApproach: Use a Bayesian model to estimate the growth of users over time, incorporating prior knowledge about market saturation.\n\n\n\n\n\n\\[\nG(t) = \\frac{C_1(t-t_0) + C_2}{\\left(1 + \\exp(-\\alpha v (t - t_0))\\right)^{\\frac{1}{v}}}\n\\]\n\\[\nC_2 \\in \\mathbb{R}_+ = \\text{is the constant capacity term}\\\\\nC_1 \\in \\mathbb{R}_+ = \\text{is the linear increasing rate of the capacity}\\\\\nt_0 \\in \\mathbb{R} = \\text{is the time offset term}\\\\\nv \\in \\mathbb{R}_+ = \\text{determines the shape of the curve} \\\\\n\\alpha \\in \\mathbb{R} = \\text{is the rate}\n\\]\n\n\nSee more in custom trend tutorial in prophetverse"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#marketing-mix-modeling",
+    "href": "presentations/bayesian_inference/index.html#marketing-mix-modeling",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Marketing Mix Modeling",
+    "text": "Marketing Mix Modeling\n\nProblem: Estimate the impact of different marketing channels on sales.\nApproach: Use Bayesian models to:\n\nIncorporate prior knowledge about the effectiveness of each channel.\nEstimate the posterior distribution of the impact of each channel on sales.\nIncorporate A/B testing results to refine estimates.\n\n\n\n\\[\nE[\\text{Sales} | \\text{Marketing Channels}] = \\text{trend} + \\text{seasonality} + f_{\\text{social_media}}(x_{\\text{social_media}}) + f_{\\text{email}}(x_{\\text{email}}) + f_{\\text{tv}}(x_{\\text{tv}})\n\\]"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#other-applications",
+    "href": "presentations/bayesian_inference/index.html#other-applications",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Other applications",
+    "text": "Other applications\n\nForecasting for Inventory Management: Estimating the probability of stock-outs and optimal reorder points.\nCensored Data Analysis: (e.g., survival analysis in medicine, reliability engineering)\nA/B Testing: Quantifying \\(P(\\text{Variant A &gt; Variant B})\\) and the magnitude of difference.\nHierarchical Models: Sharing information between groups (e.g., price elasticity across different products/regions, user behavior in different cohorts)."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#conclusion",
+    "href": "presentations/bayesian_inference/index.html#conclusion",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Conclusion",
+    "text": "Conclusion\n\n\n\nActs as regularization\nInference comes in many flavors: MCMC, Variational Inference, MAP.\nProbabilistic Programming Languages (PPLs) make it easy to implement complex models.\nProvide rich uncertainty quantification.\nNatural way to incorporate domain knowledge through priors."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#thank-you",
+    "href": "presentations/bayesian_inference/index.html#thank-you",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Thank you!",
+    "text": "Thank you!\n\nJoin sktime and Prophetverse’s discord channel!"
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#motivation-why-bayesian",
+    "href": "presentations/bayesian_inference/index.html#motivation-why-bayesian",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Motivation: Why Bayesian?",
+    "text": "Motivation: Why Bayesian?\nWhich of these is a Bayesian statement, and which is Frequentist?\n\n\nA. There is a 95% probability that the true value \\(\\theta\\) lies in my interval \\([A, B]\\).\n\n\nB. There is 95% chance that my interval \\([A, B]\\) contains the true quantity \\(\\theta\\).\n\n\nIf \\([A, B]\\) is an interval generated by a model, and \\(\\theta\\) is the parameter of interest."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#motivation-interpreting-intervals",
+    "href": "presentations/bayesian_inference/index.html#motivation-interpreting-intervals",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Motivation: Interpreting Intervals",
+    "text": "Motivation: Interpreting Intervals\nAnswer:\n\nA. (Bayesian): “There is a 95% probability that the true quantity \\(\\theta\\) lies in \\([A, B]\\)” * Treats \\(\\theta\\) as random, data as fixed. Probability statement about the parameter.\n\n\nB. (Frequentist): “There is 95% chance that \\([A, B]\\) contains the true quantity \\(\\theta\\)” * Treats \\(\\theta\\) as fixed, data (and thus interval) as random. Statement about the procedure: if repeated many times, 95% of such intervals would capture the true \\(\\theta\\).\n\n\nThe key difference: Bayesian credible intervals condition on the observed data. Frequentist confidence intervals consider the randomness of the data generation process."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#visualizing-the-difference",
+    "href": "presentations/bayesian_inference/index.html#visualizing-the-difference",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Visualizing the Difference",
+    "text": "Visualizing the Difference\n\n\nAdapted from Jake VanderPlas. (Link to video)."
+  },
+  {
+    "objectID": "presentations/bayesian_inference/index.html#motivation-3",
+    "href": "presentations/bayesian_inference/index.html#motivation-3",
+    "title": "Bayesian Inference - Introduction with Applications",
+    "section": "Motivation",
+    "text": "Motivation\nPrincipled Regularization\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPriors act as a natural way to regularize models and prevent overfitting.\nFor example, Lasso and Ridge regressions are “bayesian”."
+  }
+]
