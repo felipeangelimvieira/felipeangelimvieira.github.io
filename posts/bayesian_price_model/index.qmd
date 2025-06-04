@@ -163,14 +163,14 @@ key = jax.random.PRNGKey(0)
 key, key_price, key_region, key_y = jax.random.split(key, 4)
 
 n_regions, n_obs = 4, 200
-true_p50 = jnp.array([10.0, 12.0, 9.0, 15.0])
+true_p50 = jnp.array([10.0, 12.0, 9.0, 11.0])
 true_n = jnp.array([2.0, 1.8, 2.5, 1.6]) * 4
 
 # 1) sample prices as before
 price = jax.random.uniform(key_price, (n_obs,), minval=0.0, maxval=20.0)
 
 # 2) define region probabilities (last region only 5%)
-region_probs = jnp.array([0.42, 0.2, 0.35, 0.03])
+region_probs = jnp.array([0.2, 0.2, 0.57, 0.03])
 region_idx = jax.random.choice(
     key_region, jnp.arange(n_regions), shape=(n_obs,), p=region_probs
 )
@@ -223,7 +223,7 @@ p_{50} \;\sim\; \mathrm{HalfNormal}(20),
 $$
 
 $$
-slope \;\sim\; \mathrm{HalfNormal}(1000)
+lambda \;\sim\; \mathrm{HalfNormal}(1000) \; slope = \log(1 + \lambda)
 $$
 
 ```{python}
