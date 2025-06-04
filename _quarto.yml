@@ -4,6 +4,7 @@ project:
 website:
   title: "Bytes of Thoughts"
   site-url: https://felipeangelim.com
+  draft-mode: unlinked
   navbar:
     right:
       - text: About
