@@ -1,0 +1,344 @@
+/* custom.scss */
+
+/*-- scss:defaults --*/
+/*-- Google Fonts Import --*/
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Roboto+Slab:wght@400;700&display=swap');
+
+/*-- Variables --*/
+:root {
+    --r-main-font: 'Lato', sans-serif;
+    --r-heading-font: 'Roboto Slab', serif;
+    --r-code-font: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+
+    // Professional Color Palette (Example - Cool Blues & Grays)
+    --r-background-color: #f8f9fa; // Very light gray, almost white
+    --r-main-color: #343a40; // Dark gray for text
+    --r-heading-color: #2c3e50; // Slightly darker, richer blue/gray for headings
+    --r-link-color: #007bff; // Standard blue for links
+    --r-link-color-hover: #0056b3; // Darker blue for link hover
+    --r-selection-background-color: #007bff;
+    --r-selection-color: #ffffff;
+
+    // Accent color (can be used for highlights, borders, etc.)
+    --accent-color: #17a2b8; // A muted teal/cyan
+
+    // Code block colors
+    --code-bg-color: #e9ecef; // Light gray for code background
+    --code-text-color: #212529; // Dark gray for code text
+    --code-border-color: #ced4da;
+}
+
+/*-- scss:rules --*/
+/*-- General Slide Styles --*/
+.reveal {
+    font-family: var(--r-main-font);
+    /* TRY ADJUSTING THIS: Base font size for the entire presentation */
+    /* font-size: 38px; */
+    /* Original larger example */
+    font-size: 34px;
+    /* Example: Slightly smaller base size */
+    font-weight: 300;
+    color: var(--r-main-color);
+}
+
+/*-- Headings --*/
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+    font-family: var(--r-heading-font);
+    color: var(--r-heading-color);
+    font-weight: 700;
+    /* TRY ADJUSTING THIS: Line height for headings if they feel too spaced out */
+    /* line-height: 1.2; */
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    /* TRY ADJUSTING THIS: Bottom margin for headings */
+    /* margin-bottom: 0.5em; */
+    margin-bottom: 0.4em;
+}
+
+.reveal h1 {
+    /* TRY ADJUSTING THIS: Font size for H1 headings */
+    /* font-size: 2.2em; */
+    /* 'em' is relative to the .reveal font-size */
+    font-size: 2.0em;
+    text-shadow: none;
+}
+
+.reveal h2 {
+    /* TRY ADJUSTING THIS: Font size for H2 headings */
+    /* font-size: 1.8em; */
+    font-size: 1.7em;
+}
+
+.reveal h3 {
+    /* TRY ADJUSTING THIS: Font size for H3 headings */
+    /* font-size: 1.4em; */
+    font-size: 1.3em;
+}
+
+/*-- Body Text & Paragraphs --*/
+.reveal p {
+    /* TRY ADJUSTING THIS: Line height for paragraphs */
+    /* line-height: 1.5; */
+    line-height: 1;
+    margin-bottom: 0.8em;
+}
+
+
+
+/*-- Links --*/
+.reveal a {
+    color: var(--r-link-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.reveal a:hover {
+    color: var(--r-link-color-hover);
+    text-decoration: underline;
+}
+
+/*-- Code Blocks --*/
+.reveal pre {
+    display: block;
+    background-color: var(--code-bg-color);
+    color: var(--code-text-color);
+    font-family: var(--r-code-font);
+    /* TRY ADJUSTING THIS: Font size for code blocks */
+    /* font-size: 0.7em; */
+    font-size: 0.65em;
+    line-height: 1.4;
+    padding: 1em;
+    border-radius: 8px;
+    border: 1px solid var(--code-border-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    word-wrap: normal;
+    overflow-x: auto;
+}
+
+.reveal pre code {
+    padding: 0;
+    background: none;
+    color: inherit;
+    max-height: none;
+}
+
+/*-- Inline Code --*/
+.reveal code {
+    font-family: var(--r-code-font);
+    background-color: rgba(var(--accent-color), 0.1);
+    color: var(--r-heading-color);
+    padding: 0.1em 0.3em;
+    border-radius: 4px;
+    /* TRY ADJUSTING THIS: Font size for inline code */
+    /* font-size: 0.85em; */
+    font-size: 0.8em;
+}
+
+/*-- Blockquotes --*/
+.reveal blockquote {
+    border-left: 4px solid var(--accent-color);
+    background-color: #f1f3f5;
+    padding: 0.5em 1em;
+    margin: 1em 0;
+    font-style: italic;
+    color: #495057;
+}
+
+.reveal blockquote p {
+    margin-bottom: 0.5em;
+}
+
+/*-- Lists --*/
+.reveal ul,
+.reveal ol {
+    margin-bottom: 0.8em;
+}
+
+.reveal li {
+    margin-bottom: 0.3em;
+}
+
+/*-- Images --*/
+.reveal img {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 0.5em auto;
+}
+
+/*-- Slide Number --*/
+.reveal .slide-number {
+    font-size: 0.5em;
+    color: var(--r-main-color);
+    opacity: 0.7;
+    right: 20px;
+    bottom: 20px;
+}
+
+/*-- Footer --*/
+.reveal .footer {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    font-size: 0.45em;
+    color: var(--r-main-color);
+    opacity: 0.7;
+}
+
+/*-- Logo --*/
+.reveal .logo img {
+    max-height: 60px;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+/*-- Quarto Callouts --*/
+.reveal .callout {
+    border-radius: 8px;
+    margin: 1em 0;
+    padding: 1em;
+    font-size: 0.9em;
+    /* This is relative to the .reveal font-size */
+}
+
+.reveal .callout-header {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+    font-family: var(--r-heading-font);
+}
+
+.reveal .callout.callout-tip {
+    border-left: 5px solid #28a745;
+    background-color: #e9f5ec;
+}
+
+.reveal .callout.callout-tip .callout-header {
+    color: #155724;
+}
+
+.reveal .callout.callout-note {
+    border-left: 5px solid var(--r-link-color);
+    background-color: #e7f3ff;
+}
+
+.reveal .callout.callout-note .callout-header {
+    color: #004085;
+}
+
+.reveal .callout.callout-warning {
+    border-left: 5px solid #ffc107;
+    background-color: #fff8e1;
+}
+
+.reveal .callout.callout-warning .callout-header {
+    color: #856404;
+}
+
+.reveal .callout.callout-important {
+    border-left: 5px solid #dc3545;
+    background-color: #fbeae5;
+}
+
+.reveal .callout.callout-important .callout-header {
+    color: #721c24;
+}
+
+/*-- Table Styling --*/
+.reveal table {
+    margin: 1em auto;
+    border-collapse: collapse;
+    width: auto;
+    /* TRY ADJUSTING THIS: Font size for tables */
+    /* font-size: 0.8em; */
+    font-size: 0.75em;
+    /* Relative to .reveal font-size */
+}
+
+.reveal th,
+.reveal td {
+    border: 1px solid #dee2e6;
+    padding: 0.6em 0.8em;
+    text-align: left;
+}
+
+.reveal th {
+    background-color: #e9ecef;
+    font-weight: bold;
+    font-family: var(--r-heading-font);
+    color: var(--r-heading-color);
+}
+
+.reveal tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/*-- Specific RevealJS elements --*/
+.reveal .progress {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--accent-color);
+    height: 5px;
+}
+
+.reveal .slides section {
+    /* text-align: left; */
+    /* Uncomment if you prefer left-aligned text globally */
+}
+
+/* Column styling */
+.reveal .columns {
+    display: flex;
+    gap: 20px;
+}
+
+
+.reveal .column[width="30%"] {
+    flex-basis: 30%;
+    flex-grow: 0;
+}
+
+.reveal .column[width="40%"] {
+    flex-basis: 40%;
+    flex-grow: 0;
+}
+
+.reveal .column[width="50%"] {
+    flex-basis: 50%;
+    flex-grow: 0;
+}
+
+.reveal .column[width="60%"] {
+    flex-basis: 60%;
+    flex-grow: 0;
+}
+
+.reveal .column[width="70%"] {
+    flex-basis: 70%;
+    flex-grow: 0;
+}
+
+/* Styled Card */
+.styled-card {
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.75em;
+    padding: 1.25em;
+    margin: 1em 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.no-margin {
+    margin: 0 !important;
+}
+
+.caption {
+    font-size: 0.8em;
+    color: var(--r-main-color);
+    text-align: center;
+    margin-top: 0.5em;
+    font-style: italic;
+}

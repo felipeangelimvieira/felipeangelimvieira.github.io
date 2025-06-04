@@ -1,29 +1,581 @@
 ---
-title: "Habits"
-author: "John Doe"
-format: revealjs
+title: "Bayesian Inference - Introduction with Applications"
+author: "Felipe Angelim"
+format: 
+  revealjs:
+    theme: [default, custom.scss] # Example: add a custom.scss for styling
+    slide-number: true
+    #chalkboard: true
+    #logo: logo.png # Optional: if you have a logo
+    embed-resources: true # Good for sharing a single HTML file
+    incremental: true # Makes lists appear one item at a time by default
+    # toc: true # Adds a table of contents
+    # toc-depth: 2
+    width: 1280
+    height: 720
 ---
 
-# In the morning
+## About me
 
-## Getting up
+:::: {.columns style="align-items: center; justify-content: center; width: 100%;"}
+  
+::: {.column style="width: 20%; display: flex; align-items: center; justify-content: center;"}
+![](profile.png){width="300px" fig-align="center"}
+:::
 
-- Turn off alarm
-- Get out of bed
+::: {.column style="display: flex; flex-direction: column; align-items: center; gap: 0.3em;"}
+<p class="no-margin" style="font-size: 1.8em;">Felipe Angelim</p>
+<p class="no-margin" style="font-size: 0.8em;">Tech Lead @ Mercado Libre</p>
+<p class="no-margin" style="font-size: 0.8em;">Core Dev @ Sktime</p>
+<p class="no-margin" style="font-size: 0.8em;">Creator/Dev @ Prophetverse</p>
+<p class="no-margin" style="font-size: 0.8em;">
 
-## Breakfast
 
-- Eat eggs
-- Drink coffee
+  <a href="https://felipeangelim.com">felipeangelim.com</a>
+</p>
+:::
 
-# In the evening
+::::
 
-## Dinner
+## Agenda
 
-- Eat spaghetti
-- Drink wine
+1.  Motivation
+2.  Bayes: Priors, posteriors, and likelihoods
+3.  Bayesian Inference applications
 
-## Going to sleep
+# Motivation
 
-- Get in bed
-- Count sheep
+## Motivation
+
+```{python}
+# | echo: False
+# | fig-align: "center"
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Parâmetros da sigmoide
+L = 1  # nível de saturação
+k = 1  # inclinação
+x0 = 0  # ponto médio
+
+# Geração dos pontos de x de -10 até 2.5
+x = np.linspace(-10, 2.5, 500)
+
+sigmoide = L / (1 + np.exp(-k * (x - x0)))
+
+x = pd.date_range(start="2023-01-01", periods=len(x), freq="D")
+
+# Cálculo da derivada da sigmoide
+sigmoide_derivative = k * sigmoide * (1 - sigmoide)
+
+# Adicionando ruído gaussiano à derivada
+np.random.seed(0)  # Para reproducibilidade
+noise = np.random.normal(scale=0.01, size=sigmoide_derivative.shape)
+sigmoide_derivative_noisy = sigmoide_derivative + noise
+
+# Cálculo do valor acumulado (integral aproximada)
+dx = x[1] - x[0]
+accumulated = np.cumsum(sigmoide_derivative_noisy) * dx
+
+# Plot dos dois gráficos alinhados verticalmente
+fig, axs = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
+
+# Gráfico 1: Derivada com ruído
+axs[0].plot(
+    x, sigmoide_derivative_noisy, color="#007ACC", linewidth=2, label="New clients"
+)
+axs[0].set_title("New clients per day", fontsize=14)
+axs[0].legend(fontsize=12)
+axs[0].grid(True, linestyle="--", alpha=0.6)
+
+# Gráfico 2: Valor acumulado
+axs[1].plot(x, accumulated, color="#FF5733", linewidth=2)
+axs[1].set_xlabel("x", fontsize=12)
+axs[1].set_title("Total Number of clients", fontsize=14)
+axs[1].axhline(1, color="gray", linestyle="--", linewidth=1, label="Saturation Level")
+axs[1].legend(fontsize=12)
+axs[1].grid(True, linestyle="--", alpha=0.6)
+plt.tight_layout()
+plt.show()
+
+
+```
+
+
+## Motivation
+
+![](diffusion_of_innovations.png){fig-align="center"}
+
+
+* **Scalar number is not enough**: we want to quantify uncertainty.
+* **Small data requires regularization**: with bayesian methods, we use priors and domain knowledge.
+
+
+
+# Priors, Posteriors, and Likelihoods
+
+
+## Key ingredients
+### Priors, Posteriors, and Likelihoods
+
+
+$$
+\underbrace{P(\theta|X)}_{\text{Posterior}} = \frac{\overbrace{P(X|\theta)}^{\text{Likelihood}} \; \overbrace{P(\theta)}^{\text{Prior}}}{\underbrace{P(X)}_{\text{Evidence}}} \implies \quad \quad P(\theta|X) {\LARGE \propto} P(X|\theta) P(\theta)
+$$
+
+![](diagram1.png){fig-align="center"}
+
+
+## Inference
+
+* We only now how to compute $f_X(\theta) = P(X|\theta)P(\theta)$, that is proportional to the posterior.
+* Inference methods:
+  1. **Sampling methods**: e.g., Markov Chain Monte Carlo (MCMC).
+  2. **Variational inference**: approximate the posterior with a simpler distribution.
+  3. **Maximum a Posteriori (MAP)**: find the mode of the posterior distribution.
+
+
+![](not_that_much.png){fig-align="center" width="100%"}
+
+
+## Inference {.smaller}
+### Markov Chain Monte Carlo (MCMC) 
+
+:::: {.columns}
+
+::: {.column width="40%"}
+* Markov Chains: sequence of random events/states, with transition probabilities between them. 
+* Can have stationary distributions, "equilibrium".
+* Idea: build a chain whose "equilibrium" is the posterior distribution of interest.
+* Here Monte Carlo is used to be able to sample from such target distribution.
+:::
+
+::: {.column width="60%"}
+![](mcmc_convergence.png){width="100%"}
+:::
+
+::::
+
+
+
+## Inference
+### Markov Chain Monte Carlo (MCMC)
+
+![](mh_accepted_rejected_fast.gif){width="40%"}
+
+
+## Simple linear regression {.smaller}
+
+
+:::: {.columns}
+
+::: {.column width="50%" style="flex-direction: column; align-items: center; display: flex; justify-content: center;"}
+
+
+$$
+\alpha \sim N(0, 10) \\
+\beta \sim N(0, 10) \\
+\sigma \sim \text{HalfCauchy}(5) \\
+Y_i \sim N(\alpha + \beta X_i, \sigma)
+$$
+
+
+
+```python
+import numpyro
+from numpyro import distributions as dist
+
+def linear_regression_model(x, y=None):
+    
+    # Priors on intercept and slope
+    alpha = numpyro.sample("alpha", dist.Normal(0.0, 10.0))
+    beta = numpyro.sample("beta", dist.Normal(0.0, 10.0))
+
+    # Prior on noise scale (sigma > 0)
+    sigma = numpyro.sample("sigma", dist.HalfCauchy(5.0))
+
+    # Likelihood
+    mean = alpha + beta * x
+    with numpyro.plate("data", x.shape[0]):
+        numpyro.sample("obs", dist.Normal(mean, sigma), obs=y)
+```
+:::
+
+::: {.column width="50%" style="flex-direction: column; align-items: center; display: flex; justify-content: center;"}
+
+![](prior_intervals.png){width="80%" fig-align="center"}
+
+
+:::
+
+::::
+
+---
+
+## Simple linear regression {.smaller}
+
+:::: {.columns}
+::: {.column width="50%" style="flex-direction: column; align-items: center; display: flex; justify-content: center;"}
+
+```python
+from numpyro.infer import MCMC, NUTS
+import jax.random as random
+
+# Random key for reproducibility
+rng_key = random.PRNGKey(0)
+
+kernel = NUTS(linear_regression_model)
+mcmc = MCMC(kernel, num_warmup=1000, num_samples=2000)
+mcmc.run(rng_key, x_data, y_data)
+posterior_samples = mcmc.get_samples()
+
+```
+
+:::
+
+::: {.column width="50%" style="flex-direction: column; align-items: center; display: flex; justify-content: center;"}
+
+
+
+![](posterior_intervals.png){width="70%" fig-align="center"}
+
+:::
+
+::::
+
+---
+
+## Bayesian Neural Networks {.smaller}
+
+
+:::: {.columns}
+
+::: {.column}
+* Extend this idea of "random" parameters to neural networks' weights.
+* Use priors on weights, and sample from the posterior distribution.
+* $weights \sim N(0, I)$
+
+:::
+
+::: {.column}
+
+![](bnn_posterior_intervals.png)
+
+:::
+
+::::
+
+## Inference {.smaller}
+
+### Variational Inference
+
+* We can also accept that the true posterior may be really hard to compute, and approximate it with a simpler distribution.
+* Search $q \in Q$ that minimizes the Kullback-Leibler divergence $D_{KL}(q || p(\cdot | X))$ w.r.t the true posterior.
+* Variational inference (VI) provides a fast and approximate solution to the problem.
+* Nowadays, libraries provide automatic Stochastic Variational Inference (SVI).
+* Usually the choice for Bayesian Neural Networks and large datasets. 
+
+
+![](vi_illustration.png){fig-align="center" width="100%"}
+
+
+## Inference {.smaller}
+
+### Maximum A Posteriori (MAP)
+
+* Find the mode (maximum) of the posterior distribution.
+* Not a full Bayesian inference, but can be useful for fast inference and regularization.
+
+$$
+\arg\max_\theta P(\theta | X)
+$$
+  
+![](plp.png){fig-align="center" width="100%"}
+
+
+---
+
+## Inference {.smaller}
+### Maximum A Posteriori (MAP)
+
+* **You are already using bayes!**
+* Ridge regression, and Lasso, can be obtained from a Bayesian perspective!
+* Bayesian inference offer a more interpretable vision over regularization.
+
+:::: {.columns style="height: 45%;"}
+
+::: {.column .styled-card}
+
+Ridge regression:
+
+
+
+$$
+Y|X = X\beta + \epsilon, \quad \epsilon \sim N(0, \sigma^2 I) \\
+\hat{\beta} = \arg\min_\beta \left\{ ||y - X\beta||^2 + \lambda ||\beta||^2 \right\} 
+$$
+
+:::
+
+::: {.column .styled-card}
+
+Bayesian Ridge regression:
+
+$$
+Y | X \sim N(X\beta, \sigma^2 I) \\
+\beta \sim N(0, \frac{I}{\tau^2}) \\
+\hat{\beta} = \arg\max_\beta P(\beta | X, Y)
+$$
+
+:::
+
+::::
+
+
+## You are already using bayes {.smaller}
+
+$$
+P(\beta)
+$$
+
+```{python}
+# | echo: false
+# | fig-align: "center"
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Generate data for a standard normal distribution centered at 0
+x = np.linspace(-4, 4, 400)
+y = (1 / np.sqrt(2 * np.pi)) * np.exp(-(x**2) / 2)
+
+# Create minimalistic plot with x-axis, filled area, and vertical line at x=0
+fig, ax = plt.subplots()
+
+# Plot the normal distribution curve
+ax.plot(x, y, color="black", linewidth=2)
+
+# Fill area under the curve
+ax.fill_between(x, y, color="lightgray", alpha=0.5)
+
+# Add a vertical line at x=0
+ax.axvline(0, color="black", linestyle="--", linewidth=1)
+
+# Show only the bottom spine (x-axis), hide others
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.spines["left"].set_visible(False)
+
+# Keep bottom spine (x-axis) visible
+ax.spines["bottom"].set_visible(True)
+
+# Remove y-axis ticks; keep x-axis ticks
+ax.set_yticks([])
+
+plt.show()
+
+```
+
+# Applications on timeseries
+
+## Total Addressable market (TAM) estimation {.smaller}
+
+* **Problem**: Estimate the total number of potential users/customers in a market.
+* **Approach**: Use a Bayesian model to estimate the growth of users over time, incorporating prior knowledge about market saturation.
+
+
+:::: {.columns}
+
+::: {.column}
+![](users-data.png)
+:::
+
+::: {.column}
+$$
+G(t) = \frac{C_1(t-t_0) + C_2}{\left(1 + \exp(-\alpha v (t - t_0))\right)^{\frac{1}{v}}} 
+$$
+
+$$
+C_2 \in \mathbb{R}_+ = \text{is the constant capacity term}\\
+C_1 \in \mathbb{R}_+ = \text{is the linear increasing rate of the capacity}\\
+t_0 \in \mathbb{R} = \text{is the time offset term}\\
+v \in \mathbb{R}_+ = \text{determines the shape of the curve} \\
+\alpha \in \mathbb{R} = \text{is the rate}
+$$
+
+:::
+
+::::
+
+
+::: {.footer}
+See more in  [custom trend tutorial in prophetverse](https://prophetverse.com/latest/howto/custom_trend.html)
+:::
+---
+
+### Total Addressable market (TAM) estimation {.smaller}
+
+:::: {.columns}
+
+
+::: {.column width="70%"}
+![](custom-trend-plot.png){fig-align="center" width="100%"}
+:::
+
+::: {.column width="30%"}
+
+![](capacities.png){fig-align="center" width="100%"}
+:::
+
+
+::: {.footer}
+See more in  [custom trend tutorial in prophetverse](https://prophetverse.com/latest/howto/custom_trend.html)
+::: 
+
+::::
+
+
+## Marketing Mix Modeling {.smaller}
+
+* **Problem**: Estimate the impact of different marketing channels on sales.
+* **Approach**: Use Bayesian models to:
+  * Incorporate prior knowledge about the effectiveness of each channel.
+  * Estimate the posterior distribution of the impact of each channel on sales.
+  * Incorporate A/B testing results to refine estimates.
+
+::: {.fragment}
+$$
+E[\text{Sales} | \text{Marketing Channels}] = \text{trend} + \text{seasonality} + f_{\text{social_media}}(x_{\text{social_media}}) + f_{\text{email}}(x_{\text{email}}) + f_{\text{tv}}(x_{\text{tv}}) 
+$$
+
+:::
+
+::: {.fragment}
+
+![](social_media_incremental_effect.png){fig-align="center" width="50%"}
+
+:::
+
+## Other applications
+
+
+* **Forecasting for Inventory Management:** Estimating the probability of stock-outs and optimal reorder points.
+* **Censored Data Analysis:** (e.g., survival analysis in medicine, reliability engineering)
+* **A/B Testing:** Quantifying $P(\text{Variant A > Variant B})$ and the magnitude of difference.
+* **Hierarchical Models:** Sharing information between groups (e.g., price elasticity across different products/regions, user behavior in different cohorts).
+
+## Conclusion {.smaller}
+
+
+:::: {.columns}
+
+
+
+::: {.column}
+
+* Acts as regularization
+* Inference comes in many flavors: MCMC, Variational Inference, MAP.
+* Probabilistic Programming Languages (PPLs) make it easy to implement complex models.
+* Provide rich uncertainty quantification.
+* Natural way to incorporate domain knowledge through priors.
+
+:::
+
+
+::: {.column .fragment}
+
+![](tf-logo.png)
+
+![](pymc-logo.png)
+
+:::
+
+::: {.column .fragment}
+
+![](numpyro-logo.png)
+
+:::
+
+::::
+
+
+## Thank you!
+
+* Join sktime and Prophetverse's discord channel!
+
+
+---
+
+# Extras
+
+## Motivation: Why Bayesian?
+
+**Which of these is a Bayesian statement, and which is Frequentist**?
+
+. . .
+
+::: {.styled-card}
+**A.** There is a 95% probability that the **true value $\theta$ lies in my interval $[A, B]$**.
+:::
+
+::: {.styled-card}
+**B.** There is 95% chance that **my interval $[A, B]$ contains the true quantity $\theta$**.
+:::
+
+::: {style="font-size: 0.6em;"}
+*If $[A, B]$ is an interval generated by a model, and $\theta$ is the parameter of interest.*
+:::
+
+---
+
+## Motivation: Interpreting Intervals
+
+::: {.nonincremental}
+**Answer:**
+:::
+
+> **A. (Bayesian): "There is a 95% probability that the true quantity $\theta$ lies in $[A, B]$"**
+>    * Treats $\theta$ as random, data as fixed. Probability statement about the parameter.
+
+> **B. (Frequentist): "There is 95% chance that $[A, B]$ contains the true quantity $\theta$"**
+>    * Treats $\theta$ as fixed, data (and thus interval) as random. Statement about the procedure: if repeated many times, 95% of such intervals would capture the true $\theta$.
+
+::: footer
+The key difference: Bayesian credible intervals condition on the observed data. Frequentist confidence intervals consider the randomness of the data generation process.
+:::
+
+---
+
+## Visualizing the Difference
+
+![](intervals.png){fig-align="center" width="600"}
+
+
+::: {.caption}
+Adapted from Jake VanderPlas. ([Link to video](http://www.youtube.com/watch?v=KhAUfqhLakw)).
+:::
+
+---
+
+## Motivation
+
+### Principled Regularization
+
+
+:::: {.columns}
+
+::: {.column width="70%" style="display: flex; flex-direction: row; align-items: center;"}
+
+![](regularization1.png){fig-align="center" width="100%"}
+
+![](regularization2.png){fig-align="center" width="100%"}
+:::
+
+::: {.column width="30%"}
+
+* Priors act as a natural way to regularize models and prevent overfitting.
+* For example, Lasso and Ridge regressions are "bayesian".
+:::
+
+::::
