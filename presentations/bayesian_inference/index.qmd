@@ -339,7 +339,43 @@ $$
 P(\beta)
 $$
 
-![](ridge.png){fig-align="center" width="50%"}
+```{python}
+# | echo: false
+# | fig-align: "center"
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Generate data for a standard normal distribution centered at 0
+x = np.linspace(-4, 4, 400)
+y = (1 / np.sqrt(2 * np.pi)) * np.exp(-(x**2) / 2)
+
+# Create minimalistic plot with x-axis, filled area, and vertical line at x=0
+fig, ax = plt.subplots()
+
+# Plot the normal distribution curve
+ax.plot(x, y, color="black", linewidth=2)
+
+# Fill area under the curve
+ax.fill_between(x, y, color="lightgray", alpha=0.5)
+
+# Add a vertical line at x=0
+ax.axvline(0, color="black", linestyle="--", linewidth=1)
+
+# Show only the bottom spine (x-axis), hide others
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.spines["left"].set_visible(False)
+
+# Keep bottom spine (x-axis) visible
+ax.spines["bottom"].set_visible(True)
+
+# Remove y-axis ticks; keep x-axis ticks
+ax.set_yticks([])
+
+plt.show()
+
+```
 
 # Applications on timeseries
 
@@ -524,41 +560,6 @@ Adapted from Jake VanderPlas. ([Link to video](http://www.youtube.com/watch?v=Kh
 
 ## Motivation
 
-### Probabilistic Programming is Powerful
-
-
-:::: {.columns}
-
-::: {.column}
-
-![](tf-logo.png)
-
-![](pymc-logo.png)
-
-:::
-
-::: {.column}
-
-![](numpyro-logo.png)
-
-:::
-
-
-::: {.column}
-
-* Easy implementation of structural models, e.g., epidemiology, climate,
-  economics, etc.
-* Fast inference on large datasets.
-
-:::
-
-::::
-
-
----
-
-## Motivation
-
 ### Principled Regularization
 
 
@@ -578,37 +579,3 @@ Adapted from Jake VanderPlas. ([Link to video](http://www.youtube.com/watch?v=Kh
 :::
 
 ::::
-
----
-
-## Motivation
-
-### Rich Uncertainty Quantification
-
-:::: {.columns}
-
-
-::: {.column width="70%"}
-![](custom-trend-plot.png){fig-align="center" width="100%"}
-:::
-
-::: {.column width="30%"}
-
-* Obtain full posterior distributions for parameters.
-* Calculate credible intervals, probabilities of hypotheses and predict distributions.
-:::
-
-::::
-
-
----
-
-## Motivation: Concrete Use-Cases (Overview)
-
-Bayesian methods shine in areas like:
-
-* **Censored Data Analysis:** (e.g., survival analysis in medicine, reliability engineering)
-* **A/B Testing:** Quantifying $P(\text{Variant A > Variant B})$ and the magnitude of difference.
-* **Hierarchical Models:** Sharing information between groups (e.g., price elasticity across different products/regions, user behavior in different cohorts).
-* **Time Series Forecasting:** Incorporating priors for structure, quantifying uncertainty in future predictions (e.g., probability of stock-outs).
-
