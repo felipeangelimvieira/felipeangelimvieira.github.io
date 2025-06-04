@@ -1,5 +1,11 @@
 [
   {
+    "listing": "/presentations.html",
+    "items": [
+      "/presentations/bayesian_inference/index.html"
+    ]
+  },
+  {
     "listing": "/blog.html",
     "items": []
   }
