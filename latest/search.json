@@ -95,7 +95,7 @@
     "href": "presentations/bayesian_inference/index.html#bayesian-neural-networks",
     "title": "Bayesian Inference - Introduction with Applications",
     "section": "Bayesian Neural Networks",
-    "text": "Bayesian Neural Networks\n\n\n\nExtend this idea of “random” parameters to neural networks’ weights.\nUse priors on weights, and sample from the posterior distribution.\n\\(weights \\sim N(0, I)\\)"
+    "text": "Bayesian Neural Networks\n\n\n\nExtend this idea of “random” parameters to neural networks’ weights.\nUse priors on weights, and sample from the posterior distribution.\n\\(weights \\sim N(0, I)\\), for example\n\n\n\n\nBlundell, Charles, et al. “Weight uncertainty in neural network.” International conference on machine learning. PMLR, 2015."
   },
   {
     "objectID": "presentations/bayesian_inference/index.html#inference-3",
