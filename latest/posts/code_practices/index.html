@@ -227,24 +227,16 @@ div.csl-indent {
 </ul>
 <p>Basically, simplicity implies less effort in the long term.</p>
 <p>Think about the code as a graph. The nodes are components (e.g., functions) we create, and the edges represent their dependencies. Simple code would be a graph with few edges, where edges represent dependencies of components on others. A dependency can be, for example, an assumption of the structure of the output of one component, the existence of certain methods, etc. The number of edges would be proportional to the complexity of the system and our cognitive load.</p>
-<div id="403211cf" class="cell" data-execution_count="1">
-<div class="cell-output cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-2-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="imgs/loosely_coupled_code.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
 </figure>
-</div>
-</div>
 </div>
 <p>If we would perturb the graph above, such as changing the output of node 11, it would only affect the nodes that are directly connected to it, and not the whole graph. This is what we want to achieve with our code: a graph with few edges, where we can easily replace parts without affecting the whole system.</p>
-<div id="7f3c9d31" class="cell" data-execution_count="2">
-<div class="cell-output cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-3-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="imgs/perturbing_component.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
 </figure>
-</div>
-</div>
 </div>
 </section>
 <section id="the-objective-function" class="level2">
@@ -265,14 +257,10 @@ div.csl-indent {
 </figure>
 </div>
 <p>While “easy” solutions may feel quicker and simpler initially, generalizable, well-designed solutions usually save more effort in the long run. They avoid the exponential increase in complexity and maintenance costs that come from constantly adapting overfitted solutions.</p>
-<div id="8a631c7d" class="cell" data-execution_count="3">
-<div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-4-output-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+<p><img src="imgs/effort_over_time.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
 </figure>
-</div>
-</div>
 </div>
 </section>
 <section id="the-regret" class="level3">
@@ -280,14 +268,10 @@ div.csl-indent {
 <p>I’ve often wondered what exactly we’re optimizing for when designing and writing code. Just like machine learning models use metrics to evaluate their performance, we need something to measure code quality. After some thought, I’ve come to see <em>regret</em> as a useful measure.</p>
 <p>In simple terms, regret is the extra effort spent compared to an ideal solution. This concept is borrowed from machine learning, particularly from the “multi-armed bandit” problem, where decisions must be made based on limited information. The goal there is to minimize regret—the gap between your choices and the best possible outcomes—over time. This mirrors how we write code, making choices with incomplete information and constantly adapting as we learn more.</p>
 <p>Experienced developers naturally have lower regret because they anticipate changes more effectively, ask better questions early on, and build resilient systems from the start.</p>
-<div id="170577cf" class="cell" data-execution_count="4">
-<div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-5-output-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+<p><img src="imgs/regret_over_time.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
 </figure>
-</div>
-</div>
 </div>
 </section>
 <section id="good-code-starts-before-writing-code" class="level3">
@@ -310,14 +294,10 @@ div.csl-indent {
 <section id="avoid-premature-optimization" class="level3">
 <h3 class="anchored" data-anchor-id="avoid-premature-optimization">Avoid premature optimization</h3>
 <p>While it’s important to anticipate change, guessing too far ahead about possible future requirements can be dangerous. This is known as <em>premature optimization</em>. It can create significant regret—first due to excessive effort upfront, and later because reality rarely matches our early guesses.</p>
-<div id="589718fb" class="cell" data-execution_count="5">
-<div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-6-output-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+<p><img src="imgs/effort_vs_regret.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
 </figure>
-</div>
-</div>
 </div>
 <p>I once found myself in this trap: trying to optimize a codebase that wasn’t even in production yet. I went deep into SOLID principles, endlessly splitting functions and abstracting for flexibility I thought I might need later. But those future requirements never arrived. The code became so abstract that it was hard to maintain, and when real changes eventually came, I had to rewrite everything anyway.</p>
 </section>
