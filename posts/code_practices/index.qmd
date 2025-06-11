@@ -88,8 +88,11 @@ nx.draw(
     linewidths=0.8,
 )
 plt.title("Loosely Coupled Code", pad=15)
-plt.show()
+plt.savefig("imgs/loosely_coupled_code.png", dpi=300, bbox_inches="tight")
+plt.close()
 ```
+
+![](imgs/loosely_coupled_code.png){fig-align="center" width="50%"}
 
 If we would perturb the graph above, such as changing the output of node 11, it would only affect the nodes that are directly connected to it, and not the whole graph. This is what we want to achieve with our code: a graph with few edges, where we can easily replace parts without affecting the whole system.
 
@@ -154,9 +157,11 @@ plt.text(x, y + 0.35, "\u2699", fontsize=24, ha="center")
 
 plt.title("Perturbing a Component and Its Ripple Effect", pad=15)
 plt.axis("off")
-plt.show()
-
+plt.savefig("imgs/perturbing_component.png", dpi=300, bbox_inches="tight")
+plt.close()
 ```
+
+![](imgs/perturbing_component.png){fig-align="center" width="50%"}
 
 ## The objective function
 
@@ -211,8 +216,11 @@ ax.set_ylabel("Effort (relative units)")
 ax.set_title("Effort required over time as requirements evolve")
 ax.legend()
 ax.grid(False)
-plt.show()
+fig.savefig("imgs/effort_over_time.png", dpi=300, bbox_inches="tight")
+plt.close()
 ```
+
+![](imgs/effort_over_time.png){fig-align="center" width="80%"}
 
 ### The regret
 
@@ -238,8 +246,11 @@ ax.legend()
 ax.grid(False)
 fig.autofmt_xdate()
 fig.tight_layout()
-plt.show()
+fig.savefig("imgs/regret_over_time.png", dpi=300, bbox_inches="tight")
+plt.close()
 ```
+
+![](imgs/regret_over_time.png){fig-align="center" width="80%"}
 
 ### Good code starts before writing code
 
@@ -309,8 +320,11 @@ for ax in axs:
 
 fig.autofmt_xdate()
 fig.tight_layout()
-plt.show()
+fig.savefig("imgs/effort_vs_regret.png", dpi=300, bbox_inches="tight")
+plt.close()
 ```
+
+![](imgs/effort_vs_regret.png){fig-align="center" width="80%"}
 
 I once found myself in this trap: trying to optimize a codebase that wasn't even in production yet. I went deep into SOLID principles, endlessly splitting functions and abstracting for flexibility I thought I might need later. But those future requirements never arrived. The code became so abstract that it was hard to maintain, and when real changes eventually came, I had to rewrite everything anyway.
 
