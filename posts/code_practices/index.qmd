@@ -20,7 +20,7 @@ Here, I wish to share some thoughts on code design qualities, focusing on what w
 
 The key takeaway I wish you to have is that **good code design is about resilience**. It is about not overfitting to our myopic view of the present, but rather about crafting a solution that can adapt and generalize to future requirements, just like a good machine learning model. It is about how effortless it is to adapt to changes.
 
-## Prelude 1: the map is not the territory
+## The map is not the territory
 
 ![](imgs/map_territory.png){width=30% fig-align="center" style="border-radius: 40px;"}
 
@@ -30,7 +30,7 @@ Bringing it to the context of this post, we can say that **product requirements 
 
 This idea is key to understanding what comes next. Our code is designed to solve problems, but our definitions of problems are not perfect. They are made by humans, and hence this human aspect and the imprecise understanding of what should be done is deeply connected to the quality of the code we write, even more so than what our linter and unit tests end up being.
 
-## Prelude 2: easy is not simple
+## Easy is not simple
 
 Before using the word "simple" to describe code, we should properly define what we mean by that. As gloriously explained by [Rich Hickey](https://www.youtube.com/watch?v=rI8tNMsozo0) in his talk "Simplicity Matters," simple is not the same as easy. Simple is about not packing together unrelated concerns; it is about giving clear responsibility to each component, and making it easy to modify and extend. Easy, on the other hand, is subjective; it is what is closer to your knowledge and experience, it is what you are used to doing, and not necessarily good. We should focus here on the code, not on our perspective of knowledge and experience.
 
