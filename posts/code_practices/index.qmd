@@ -11,6 +11,7 @@ draft: false
 categories: [software design, machine learning]
 thumbnail: "imgs/darkroom.png"
 jupyter: python3
+bibliography: bibliography.bib
 ---
 
 
@@ -22,32 +23,162 @@ This can also be useful for managers, product owners, and stakeholders who do no
 
 The key takeaway I wish you to have is that **good code design is about resilience**. It is about not overfitting to our myopic view of the present, but rather about crafting a solution that can adapt and generalize to future requirements, just like a good machine learning model. It is about how efortless it is to adapt to changes.
 
-## The map is not the territory
+## Prelude 1: the map is not the territory
 
 ![](imgs/map_territory.png){width=30% fig-align="center" style="border-radius: 40px;"}
 
+There is this nice quote from Alfred Korzybski that says "the map is not the territory". This means that any representation of reality is not reality itself, but rather a simplification of it. Also, it is shaped by our biases and limitations. 
 
-**Product requirement is not the product you are building**. It is a simplification what
-you want to build. Naturally, details can be missing and assumptions can be wrong, because sometimes
+Bringing it to the context of this post, we can say that **product requirements are not the product we are building**. It is a simplification of what
+we want to build. Naturally, details can be missing and assumptions can be wrong, because sometimes
 reality is more complex than what we can express in words. Sometimes, we just don't know and that is okay. We just have to be cautious to not mistake the empty with the void.
+
+This idea is key to understand what comes next. Our code is designed to solve  problems, but our definitions of problems are not perfect, they are made by humans, and hence this human aspect and the imprecise understanding of what should be done is deeply connected to the quality of the code we write, even more from what our linter and unit tests end up being.
+
+## Prelude 2: easy is not simple
+
+Before using the word "simple" to describe code, we should properly define what we mean by that. As gloriously explained by [Rich Hickey](https://www.youtube.com/watch?v=rI8tNMsozo0) in his talk "Simplicity Matters", simple is not the same as easy. Simple is about not packing together unrelated concerns, it is about giving clear responsability to each component, it is about making it easy to modify and extend. Easy, on the other hand, is subjective, is what is closer to your knowledge and experience, it is what you are used to do, and not necessarily good. We should focus here on the code, and not on our perspective of knowledge and experience.
+
+
+This definition agrees we the one in the book "A Philosophy of Software Design " (@ousterhout2018philosophy) that is a huge inspiration and reference for this post.
+
+> Complexity is anything related to the structure of a software system that makes it hard to understand and modify the system
+
+Complexity is not related to number of lines, not related to number of functions. It is about the bigger picture. In his book, John Ousterhout also enumerates some symptons of complexity:
+
+* Change amplification: when a change in one part of the system requires changes in many other parts.
+* Cognitive load: when the code is hard to understand, requiring a lot of mental effort to comprehend. 
+* Unknown unknowns: when it is hard to diagnose where a change is needed to complete a task.
+
+
+Basically, simplicity implies less effort on the long term.
+
+Think about the code as a graph. The nodes are components (it could be a function for example) we create, and the edges represent their dependencies. Simple code would be a graph with few edges, where edges represent dependencies of components on others. A dependency can be, for example, an assumption of the structure of the output of one component, the existence of certain methods, etc. The number of edges would be proportional to the complexity of the system and to our cognitive load. 
+
+```{python}
+# | echo: false
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+
+# --- Re‑create the clustered graph ---------------------------------
+sizes = [4, 4, 4]
+p_intra, p_inter = 0.85, 0.04
+G = nx.random_partition_graph(sizes, p_intra, p_inter, seed=33)
+
+# Add the requested cross‑cluster edge (5‑8)
+G.add_edge(5, 8)
+
+# Identify node indices per cluster
+partitions = list(G.graph["partition"])
+clusters = {cid: list(block) for cid, block in enumerate(partitions)}
+
+# Position clusters
+cluster_offsets = np.array([[-2, 0], [2, 0], [0, 3]])
+pos = {}
+for cid, nodes in clusters.items():
+    sub_pos = nx.spring_layout(G.subgraph(nodes), seed=cid, scale=1.0)
+    offset = cluster_offsets[cid]
+    for n in nodes:
+        pos[n] = sub_pos[n] + offset
+
+# Draw updated graph
+plt.figure(figsize=(5, 5))
+nx.draw(
+    G,
+    pos,
+    with_labels=True,
+    node_size=700,
+    node_color="skyblue",
+    edge_color="gray",
+    linewidths=0.8,
+)
+plt.title("Loosely Coupled Code", pad=15)
+plt.show()
+```
+
+If we would perturb the graph above, such as changing the output of node 11, it would only affect the nodes that are directly connected to it, and not the whole graph. This is what we want to achieve with our code: a graph with few edges, where we can easily replace parts without affecting the whole system.
+
+
+```{python}
+# | echo: false
+
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+
+# === Rebuild the clustered graph (same seed/layout) ===============
+sizes = [4, 4, 4]
+p_intra, p_inter = 0.85, 0.04
+G = nx.random_partition_graph(sizes, p_intra, p_inter, seed=33)
+G.add_edge(5, 8)  # the cross-cluster link
+
+# Find partitions (each cluster's nodes)
+partitions = list(G.graph["partition"])
+
+# Layout clusters with spacing
+cluster_offsets = np.array([[-2, 0], [2, 0], [0, 3]])
+pos = {}
+for cid, nodes in enumerate(partitions):
+    sub_pos = nx.spring_layout(G.subgraph(nodes), seed=cid, scale=1.0)
+    offset = cluster_offsets[cid]
+    for n in nodes:
+        pos[n] = sub_pos[n] + offset
+
+# Identify node 11 and its direct neighbours
+target_node = 11
+neighbors = list(G.neighbors(target_node))
+
+# Drawing ----------------------------------------------------------
+plt.figure(figsize=(5, 5))
+
+# Draw all edges first
+nx.draw_networkx_edges(G, pos, edge_color="gray", width=1.0)
+
+# Draw non-affected nodes
+non_affected = [n for n in G.nodes if n not in neighbors + [target_node]]
+nx.draw_networkx_nodes(
+    G, pos, nodelist=non_affected, node_size=700, node_color="skyblue", linewidths=0.8
+)
+
+# Draw neighbours in light orange
+nx.draw_networkx_nodes(
+    G, pos, nodelist=neighbors, node_size=700, node_color="#FFD59B", linewidths=0.8
+)
+
+# Draw target node in orange/red
+nx.draw_networkx_nodes(
+    G, pos, nodelist=[target_node], node_size=900, node_color="#FF8C42", linewidths=1.0
+)
+
+# Labels
+nx.draw_networkx_labels(G, pos, font_size=10, font_color="black")
+
+# Add a wrench / gear emoji right above node 11
+x, y = pos[target_node]
+plt.text(x, y + 0.35, "\u2699", fontsize=24, ha="center")
+
+plt.title("Perturbing a Component and Its Ripple Effect", pad=15)
+plt.axis("off")
+plt.show()
+
+```
+
+## The objective function
+
+Here, I'll try to define what is the objective function we should be optimizing when writing code. This is not a mathematical function, but rather a conceptual one. It is the guiding principle that should shape our design decisions and code structure.
 
 
 ### Overfitting to training data
 
-One might naively think that if a code does what it needs to do, it is good code. The thing is that current requirements might not reflect the long-term goals of a project. This though
+One might naively think that if a code does what it needs to do, it is good code. This though
 can lead developers to write *easy* solutions and spaghetti code that work for the present moment but is blind to the bigger picture. 
 
 
 ![](imgs/illustration1.png){width=70% fig-align="center" }
 
-Think about an abstract space of requirements. We see just a small fraction of
-the long-term objectives. Focusing too much on what we know right now makes us overfit to the training data, failing to generalize to unseen examples. While this analogy to Machine Learning can sound too much, it is actually quite accurate: **the more complex a code is, the more it is prone to overfitting**. The more hand-tuned it is to current needs, the less it can adapt to future changes. 
-
-::: {.callout-note}
-## Simple is not easy
-
-But be careful, as [Rich Hickey](https://www.youtube.com/watch?v=rI8tNMsozo0) tells us, simple is not the same as easy. Simple is about not packing together unrelated concerns, it is about giving clear responsability to each component, it is about making it easy to modify and extend. Easy, on the other hand, is subjective, is what is closer to your knowledge and experience, it is what you are used to do, and not necessarily good. We should focus here on the code, and not on our perspective of it.
-:::
+Think about an abstract space of requirements, as in the figure above. What we see is just a small fraction of
+the long-term objectives. Focusing too much on what we know right now makes us overfit to the training data, failing to generalize to unseen examples. **The more complex a code is, the more it is prone to overfitting**. The more hand-tuned it is to current needs, the less it can adapt to future changes. 
 
 
 ![](imgs/illustration2.png){width=70% fig-align="center"}
@@ -109,13 +240,15 @@ ax.grid(False)
 
 I wondered a lot about what would be the true objective function we are trying to optimize when writing code and creating solutions. As machine-learning models have a metrics to define their performance, code design quality must have a way to measure how well it is designed.
 
-I came to the conclusion that the regret is a good measure of code design quality. Regret is the cumulative extra effort when compared to the best possible solution, as there is no perfect solution. This notion is already used in some domains of Machine Learning, particularly in Multi-armed Bandits.
+I came to the conclusion that the regret is a good measure of code design quality. Regret is the cumulative extra effort when compared to the best possible solution. This notion is already used in some domains of Machine Learning, particularly in Multi-armed Bandits. In Multi-armed bandits, we have access to a set of actions, and we want to choose the one that provides the highest average reward. We don't have access to full information, and we have to make decisions based on the information we have at hand. In that sense, we try to make the best sequence of actions to minimize regret over time. 
+This is similar to how we write code: we have to make decisions based on the requirements we know, and we have to adapt to changes over time. Since it is not possible to have a perfect solution from the start, we usually think about how fast we converge to the optimal solution, considering there is one. Hence, regret tells us how good we are using the current information to make decisions.
+
+This is where experience comes in. Experienced developers can anticipate future requirements and design their code accordingly, reducing the regret. They can see beyond the current requirements and build a solution that is more resilient to change. They ask the correct questions to stakeholders, they have already seen similar changes and know what will probably come next.
 
 
 
 ```{python}
 # | echo: false
-# | fig-cap: "Regret caused by overfitting"
 # | fig-align: "center"
 
 # Calculate the cumulative regret
@@ -125,17 +258,8 @@ fig, ax = plt.subplots(
     figsize=(8, 4),
 )
 # Plot both regret and cumulative regret
-ax.fill_between(dates, regret, alpha=0.25, label="Momentary regret", color="blue")
+ax.fill_between(dates, regret, alpha=0.25, label="Regret", color="blue")
 ax.plot(dates, regret, marker="o", linewidth=1)
-ax.plot(
-    dates,
-    cumulative_regret,
-    marker="s",
-    linewidth=2,
-    label="Cumulative regret",
-    color="red",
-    linestyle="--",
-)
 ax.set_ylabel("Regret")
 ax.set_title("Regret (extra effort due to overfitting)")
 ax.legend()
@@ -147,77 +271,86 @@ plt.show()
 ```
 
 
+### Good code starts before writing code
+
+
+Taking into consideration that we have limited information, we should not try to write the perfect code from the start. The first thing we should do is **ask questions**:
+
+* What are the requirements that most likely will change in the future?
+* What are the requirements that will not change?
+* What are the assumptions we are making?
+* What is the expected lifespan of the product we are building?
+
+With the answers to these questions, we can start thinking about the design of the code. Once we have a proposal, think about how the considered future changes would affect the design.
+
 
 ![](imgs/darkroom.png){width=50% fig-align="center" style="border-radius: 40px;"}
 
 
-This is a common pitfall that reflects the lack of knowledge of existing unknowed unknowns.
-We should practice [Epistemic humility](https://en.wikipedia.org/wiki/Epistemic_humility).
-
----
+Designing usually involves defining components and contracts between them. Defining these components involves identifies parts of the code that are stable. Hence, by asking questions, we can start to figure out what functionalitites should be clustered together.
 
 
-When talking or teaching about good code, people usually talk about principles and good practices.
-When focusing too much on "how", listeners and new programmers can mistaken it by "what" we
-are trying to build: **good software**.
+### Avoid premature optimization
 
-Then, you can ask: what *good* software is? I 
-I have question in the back of my mind that I really struggle to answer: what good software design really is? People often talk about SOLID principles, but following these principles do not guarantee
-design quality, and can actually make harm when used without discipline. 
-
-1.1  The “tiny functions” pathology
-
-Uncle Bob/Clean Code vs. Cindy Sridharan’s Small Functions Considered Harmful³.
-
-## It is about the goals, not how to get there
-
-Writing good code is a lot like building a good model: it’s about resilience. It’s not just about making something that works today—it’s about crafting something that still works tomorrow, with minimal changes. In data science and software engineering alike, this is the essence of generalization.
-
-For data scientists, the concept is familiar. Overfitting to current requirements can leave your code brittle and unable to cope with the next dataset, the next user story, or the next product feature. Models are expected to generalize. So should your code. Requirements drift, just as data does. The question is: does your design handle that drift, or does it collapse under it?
-
-Breaking code into components isn’t valuable on its own. Modularity for the sake of modularity is like adding noisy features to a model—it doesn’t help, and may even hurt. The point is not to split code, but to find components and contracts that protect your system from future change. Resilience is the goal.
-
-You might ask: how can anyone know what future changes will come? Let’s break that into two cases:
-	1.	When future requirements are predictable.
-Take an e-commerce platform. Even with a minimal first version, you can safely assume features like shopping carts, order history, or payment gateways will eventually be added. That’s not guesswork—it’s experience. Your code should make room for those features from the outset.
-	2.	When future requirements are uncertain.
-Here, you work with a prediction horizon: an estimate of how far you can see into the future. Beyond that, it’s foggy. You won’t predict everything. But hopefully, what’s unpredictable is a smaller slice of the pie. Design for what’s stable. Encapsulate what might change. Use interfaces, boundaries, and contracts to contain the volatility.
-
-This is where business knowledge comes in. The better you understand the problem domain, the sharper your predictions become. Code architecture is never built in isolation—it’s shaped by product owners, stakeholders, and managers. The quality of your design reflects how well you’ve translated their insights into structure.
-
-Frameworks and libraries exist because others have walked this path. Tools like scikit-learn, sktime, Langsmith, or ibis-framework represent distilled experience: abstractions that work across common problem spaces. When they match your needs, don’t reinvent—reuse, or at least learn from them.
-
-Designing with Change in Mind
-
-Think of architecture as a search problem. You’re exploring a space of possible solutions. Try this exercise:
-	1.	Define clearly the product you’re building and the problem you’re solving.
-	2.	Ask: what parts of this solution never change? What parts might?
-	3.	Repeat this question recursively for each component.
-
-Take a classic example: predicting customer churn using machine learning. Regardless of approach, the process always includes:
-	•	Data ingestion: you need to bring data in.
-	•	Preprocessing: features must be engineered, targets aligned.
-	•	Classification: a model must be trained and used for prediction.
-	•	Postprocessing: results must be saved or served.
-
-Zooming in on classification: models can change, but some operations won’t. Every solution must:
-	•	Create a model.
-	•	Fit it.
-	•	Predict outcomes.
-
-These steps form a stable backbone. You can define contracts here:
-	•	create_model() → model
-	•	fit(model, X, y) → trained_model
-	•	predict(trained_model, X) → predictions
-
-Sounds familiar? It should—it’s essentially how scikit-learn is structured. These abstractions allow models to be swapped in and out with minimal disruption.
-
-Next, define the expected data structures at each step. This avoids cascading changes when upstream formats change. It’s a core strategy in future-proofing your code: reduce the surface area exposed to volatility.
-
-One of the most unpredictable elements in data projects is input data structure. Tables, schemas, sources—they all vary across use cases. This shouldn’t ripple through your pipeline. Instead, introduce a uniformization layer: a stage where raw data is transformed into a consistent internal format. Think of it as an ETL boundary. Beyond this point, your code sees only familiar, stable shapes.
-
-This is how you generalize—not just your models, but your design.
+While we want to optimize and make our code general, guessing what will be the future requirements and diving too deep into the details is not a good idea. We call this "premature optimization", and can create a peak of regret, due to large effort at the start, followed by another peak of regret when the requirements change and we have to re-write our abstractions and ideas to what is truly needed.
 
 
+```{python}
+# | echo: false
+# | fig-align: "center"
 
-Final thought: ask yourself not just whether your code passes the current test suite, but whether it would pass the test set of future requirements. Can your architecture handle the real-world drift in needs, data, and expectations? If not, it might be time to refactor—not for elegance, but for endurance.
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# ------------------- Data -------------------
+dates = pd.to_datetime(
+    [
+        "2025-01-01",
+        "2025-01-15",
+        "2025-02-10",
+        "2025-03-15",
+        "2025-04-20",
+        "2025-05-27",
+    ]
+)
+
+overfitted_cum = [0, 30, 35, 35, 35, 35]
+robust_cum = [0, 12, 13, 13.5, 14, 14.5]
+
+regret = [o - r for o, r in zip(overfitted_cum, robust_cum)]
+cumulative_regret = [sum(regret[: i + 1]) for i in range(len(regret))]
+
+# ------------------- Plot -------------------
+fig, axs = plt.subplots(nrows=2, sharex=True, figsize=(8, 6))
+
+# ─── Panel 1: Effort ────────────────────────
+ax_effort = axs[0]
+ax_effort.plot(dates, overfitted_cum, marker="o", label="Premature optimization")
+ax_effort.plot(dates, robust_cum, marker="o", label="Well-designed code")
+ax_effort.set_ylabel("Effort (relative units)")
+ax_effort.set_title("Effort vs. Regret as requirements evolve")
+ax_effort.legend(loc="upper left")  # legend for effort subplot
+
+# ─── Panel 2: Regret ────────────────────────
+ax_regret = axs[1]
+ax_regret.fill_between(dates, regret, alpha=0.25, label="Regret", color="blue")
+ax_regret.set_ylabel("Regret (extra effort)")
+ax_regret.legend(loc="upper left")  # legend for regret subplot
+
+# ─── Shared styling ────────────────────────
+for ax in axs:
+    for d in dates[1:]:
+        ax.axvline(d, linestyle="--", linewidth=0.8, alpha=0.3, color="black")
+    ax.grid(False)
+
+fig.autofmt_xdate()
+fig.tight_layout()
+plt.show()
+```
+
+I once found myself in a situation where I was trying to optimize a piece of code that was not even in production yet. I was radically applying SOLID principles, splitting functions into smaller and smaller pieces, trying to make it as general as possible. I was trying to anticipate future requirements that never came. The code was so abstract that it was hard to understand, and when the requirements changed, I had to rewrite everything anyway. 
+
+## Takeaways
+
+T
+

@@ -17,6 +17,7 @@ arviz = "^0.21.0"
 jax = "<0.6.0"
 lifelines = "^0.30.0"
 graphviz = "^0.20.3"
+networkx = "^3.5"
 
 
 [build-system]
