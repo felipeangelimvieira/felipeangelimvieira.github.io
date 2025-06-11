@@ -1,11 +1,161 @@
 ---
 title: "Can your code pass the test set?"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-expand: 3
 author: "Felipe Angelim"
 date: "2025-05-27"
-draft: true
+draft: false
 categories: [software design, machine learning]
+thumbnail: "imgs/darkroom.png"
 jupyter: python3
 ---
+
+
+Code is not meant to be written once and never touched again. It is meant to be read, understood, and modified over time. This is especially true in dynamic environments, where requirements change, new features are added, and bugs are fixed. In such environments, code design quality is not just a nice-to-have; it is essential for the long-term success of the project.
+
+Here, I wish to share some thoughts on code design qualities, focusing on what
+we want, and not how to get there. This is not a guide on how to write good code, but rather a reflection on what good code design means in the context of software engineering and data science.
+This can also be useful for managers, product owners, and stakeholders who do not code, but want to understand how quality impacts the product they are building.
+
+The key takeaway I wish you to have is that **good code design is about resilience**. It is about not overfitting to our myopic view of the present, but rather about crafting a solution that can adapt and generalize to future requirements, just like a good machine learning model. It is about how efortless it is to adapt to changes.
+
+## The map is not the territory
+
+![](imgs/map_territory.png){width=30% fig-align="center" style="border-radius: 40px;"}
+
+
+**Product requirement is not the product you are building**. It is a simplification what
+you want to build. Naturally, details can be missing and assumptions can be wrong, because sometimes
+reality is more complex than what we can express in words. Sometimes, we just don't know and that is okay. We just have to be cautious to not mistake the empty with the void.
+
+
+### Overfitting to training data
+
+One might naively think that if a code does what it needs to do, it is good code. The thing is that current requirements might not reflect the long-term goals of a project. This though
+can lead developers to write *easy* solutions and spaghetti code that work for the present moment but is blind to the bigger picture. 
+
+
+![](imgs/illustration1.png){width=70% fig-align="center" }
+
+Think about an abstract space of requirements. We see just a small fraction of
+the long-term objectives. Focusing too much on what we know right now makes us overfit to the training data, failing to generalize to unseen examples. While this analogy to Machine Learning can sound too much, it is actually quite accurate: **the more complex a code is, the more it is prone to overfitting**. The more hand-tuned it is to current needs, the less it can adapt to future changes. 
+
+::: {.callout-note}
+## Simple is not easy
+
+But be careful, as [Rich Hickey](https://www.youtube.com/watch?v=rI8tNMsozo0) tells us, simple is not the same as easy. Simple is about not packing together unrelated concerns, it is about giving clear responsability to each component, it is about making it easy to modify and extend. Easy, on the other hand, is subjective, is what is closer to your knowledge and experience, it is what you are used to do, and not necessarily good. We should focus here on the code, and not on our perspective of it.
+:::
+
+
+![](imgs/illustration2.png){width=70% fig-align="center"}
+
+The easy will possibly lead to less effort on the short term, and we will easily deliver what needs to be delivered. Over time, however, the simples, generalizable code pays back, and do not lead to an infinite increase in effort to adapt to new requirements.
+
+```{python}
+# | echo: false
+# | fig-align: "center"
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Timeline of requirement changes
+dates = pd.to_datetime(
+    [
+        "2025-01-01",
+        "2025-01-15",
+        "2025-02-10",
+        "2025-03-15",
+        "2025-04-20",
+        "2025-05-27",
+    ]
+)
+
+# Cumulative effort values
+overfitted_cum = [0, 3, 10, 15, 25, 50]
+robust_cum = [0, 12, 13, 13.5, 14, 14.5]
+
+# Already start at zero, so just copy
+overfitted_effort = overfitted_cum
+robust_effort = robust_cum
+
+# Regret = extra effort caused by overfitting
+regret = [o - r for o, r in zip(overfitted_effort, robust_effort)]
+
+# ──────────────── Plot ──────────────────
+fig, ax = plt.subplots(
+    figsize=(8, 3),
+)
+
+# Top subplot: cumulative effort
+ax.plot(dates, overfitted_effort, marker="o", label="Overfitted code")
+ax.plot(dates, robust_effort, marker="o", label="Well-designed code")
+
+# Requirement-change markers on both axes
+for d in dates[1:]:
+    ax.axvline(d, linestyle="--", linewidth=0.8, alpha=0.3, color="black")
+    ax.axvline(d, linestyle="--", linewidth=0.8, alpha=0.3, color="black")
+
+ax.set_ylabel("Effort (relative units)")
+ax.set_title("Effort required over time as requirements evolve")
+ax.legend()
+# remvoe grid lines
+ax.grid(False)
+
+```
+
+### The regret
+
+I wondered a lot about what would be the true objective function we are trying to optimize when writing code and creating solutions. As machine-learning models have a metrics to define their performance, code design quality must have a way to measure how well it is designed.
+
+I came to the conclusion that the regret is a good measure of code design quality. Regret is the cumulative extra effort when compared to the best possible solution, as there is no perfect solution. This notion is already used in some domains of Machine Learning, particularly in Multi-armed Bandits.
+
+
+
+```{python}
+# | echo: false
+# | fig-cap: "Regret caused by overfitting"
+# | fig-align: "center"
+
+# Calculate the cumulative regret
+cumulative_regret = [sum(regret[: i + 1]) for i in range(len(regret))]
+
+fig, ax = plt.subplots(
+    figsize=(8, 4),
+)
+# Plot both regret and cumulative regret
+ax.fill_between(dates, regret, alpha=0.25, label="Momentary regret", color="blue")
+ax.plot(dates, regret, marker="o", linewidth=1)
+ax.plot(
+    dates,
+    cumulative_regret,
+    marker="s",
+    linewidth=2,
+    label="Cumulative regret",
+    color="red",
+    linestyle="--",
+)
+ax.set_ylabel("Regret")
+ax.set_title("Regret (extra effort due to overfitting)")
+ax.legend()
+ax.grid(False)
+fig.autofmt_xdate()
+fig.tight_layout()
+
+plt.show()
+```
+
+
+
+![](imgs/darkroom.png){width=50% fig-align="center" style="border-radius: 40px;"}
+
+
+This is a common pitfall that reflects the lack of knowledge of existing unknowed unknowns.
+We should practice [Epistemic humility](https://en.wikipedia.org/wiki/Epistemic_humility).
+
+---
+
 
 When talking or teaching about good code, people usually talk about principles and good practices.
 When focusing too much on "how", listeners and new programmers can mistaken it by "what" we
