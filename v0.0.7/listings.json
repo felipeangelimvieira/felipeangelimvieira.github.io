@@ -1,0 +1,14 @@
+[
+  {
+    "listing": "/presentations.html",
+    "items": [
+      "/presentations/bayesian_inference/index.html"
+    ]
+  },
+  {
+    "listing": "/blog.html",
+    "items": [
+      "/posts/code_practices/index.html"
+    ]
+  }
+]
