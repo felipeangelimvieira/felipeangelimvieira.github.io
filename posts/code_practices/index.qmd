@@ -17,43 +17,38 @@ bibliography: bibliography.bib
 
 Code is not meant to be written once and never touched again. It is meant to be read, understood, and modified over time. This is especially true in dynamic environments, where requirements change, new features are added, and bugs are fixed. In such environments, code design quality is not just a nice-to-have; it is essential for the long-term success of the project.
 
-Here, I wish to share some thoughts on code design qualities, focusing on what
-we want, and not how to get there. This is not a guide on how to write good code, but rather a reflection on what good code design means in the context of software engineering and data science.
-This can also be useful for managers, product owners, and stakeholders who do not code, but want to understand how quality impacts the product they are building.
+Here, I wish to share some thoughts on code design qualities, focusing on what we want, not how to get there. This is not a guide on how to write good code but rather a reflection on what good code design means in the context of software engineering and data science. This can also be useful for managers, product owners, and stakeholders who do not code but want to understand how quality impacts the product they are building.
 
-The key takeaway I wish you to have is that **good code design is about resilience**. It is about not overfitting to our myopic view of the present, but rather about crafting a solution that can adapt and generalize to future requirements, just like a good machine learning model. It is about how efortless it is to adapt to changes.
+The key takeaway I wish you to have is that **good code design is about resilience**. It is about not overfitting to our myopic view of the present, but rather about crafting a solution that can adapt and generalize to future requirements, just like a good machine learning model. It is about how effortless it is to adapt to changes.
 
 ## Prelude 1: the map is not the territory
 
 ![](imgs/map_territory.png){width=30% fig-align="center" style="border-radius: 40px;"}
 
-There is this nice quote from Alfred Korzybski that says "the map is not the territory". This means that any representation of reality is not reality itself, but rather a simplification of it. Also, it is shaped by our biases and limitations. 
+There is this nice quote from Alfred Korzybski that says "the map is not the territory". This means that any representation of reality is not reality itself, but rather a simplification of it. Also, it is shaped by our biases and limitations.
 
-Bringing it to the context of this post, we can say that **product requirements are not the product we are building**. It is a simplification of what
-we want to build. Naturally, details can be missing and assumptions can be wrong, because sometimes
-reality is more complex than what we can express in words. Sometimes, we just don't know and that is okay. We just have to be cautious to not mistake the empty with the void.
+Bringing it to the context of this post, we can say that **product requirements are not the product we are building**. They are a simplification of what we want to build. Naturally, details can be missing and assumptions can be wrong, because sometimes reality is more complex than what we can express in words. Sometimes, we just don't know, and that is okay. We just have to be cautious not to mistake the empty with the void.
 
-This idea is key to understand what comes next. Our code is designed to solve  problems, but our definitions of problems are not perfect, they are made by humans, and hence this human aspect and the imprecise understanding of what should be done is deeply connected to the quality of the code we write, even more from what our linter and unit tests end up being.
+This idea is key to understanding what comes next. Our code is designed to solve problems, but our definitions of problems are not perfect. They are made by humans, and hence this human aspect and the imprecise understanding of what should be done is deeply connected to the quality of the code we write, even more so than what our linter and unit tests end up being.
 
 ## Prelude 2: easy is not simple
 
-Before using the word "simple" to describe code, we should properly define what we mean by that. As gloriously explained by [Rich Hickey](https://www.youtube.com/watch?v=rI8tNMsozo0) in his talk "Simplicity Matters", simple is not the same as easy. Simple is about not packing together unrelated concerns, it is about giving clear responsability to each component, it is about making it easy to modify and extend. Easy, on the other hand, is subjective, is what is closer to your knowledge and experience, it is what you are used to do, and not necessarily good. We should focus here on the code, and not on our perspective of knowledge and experience.
+Before using the word "simple" to describe code, we should properly define what we mean by that. As gloriously explained by [Rich Hickey](https://www.youtube.com/watch?v=rI8tNMsozo0) in his talk "Simplicity Matters," simple is not the same as easy. Simple is about not packing together unrelated concerns; it is about giving clear responsibility to each component, and making it easy to modify and extend. Easy, on the other hand, is subjective; it is what is closer to your knowledge and experience, it is what you are used to doing, and not necessarily good. We should focus here on the code, not on our perspective of knowledge and experience.
 
-
-This definition agrees we the one in the book "A Philosophy of Software Design " (@ousterhout2018philosophy) that is a huge inspiration and reference for this post.
+This definition aligns with the one in the book "A Philosophy of Software Design" (@ousterhout2018philosophy), which is a huge inspiration and reference for this post.
 
 > Complexity is anything related to the structure of a software system that makes it hard to understand and modify the system
 
-Complexity is not related to number of lines, not related to number of functions. It is about the bigger picture. In his book, John Ousterhout also enumerates some symptons of complexity:
+Complexity is not related to the number of lines or functions; it is about the bigger picture. In his book, John Ousterhout also enumerates some symptoms of complexity:
 
 * Change amplification: when a change in one part of the system requires changes in many other parts.
-* Cognitive load: when the code is hard to understand, requiring a lot of mental effort to comprehend. 
+* Cognitive load: when the code is hard to understand, requiring a lot of mental effort to comprehend.
 * Unknown unknowns: when it is hard to diagnose where a change is needed to complete a task.
 
+Basically, simplicity implies less effort in the long term.
 
-Basically, simplicity implies less effort on the long term.
+Think about the code as a graph. The nodes are components (e.g., functions) we create, and the edges represent their dependencies. Simple code would be a graph with few edges, where edges represent dependencies of components on others. A dependency can be, for example, an assumption of the structure of the output of one component, the existence of certain methods, etc. The number of edges would be proportional to the complexity of the system and our cognitive load.
 
-Think about the code as a graph. The nodes are components (it could be a function for example) we create, and the edges represent their dependencies. Simple code would be a graph with few edges, where edges represent dependencies of components on others. A dependency can be, for example, an assumption of the structure of the output of one component, the existence of certain methods, etc. The number of edges would be proportional to the complexity of the system and to our cognitive load. 
 
 ```{python}
 # | echo: false
