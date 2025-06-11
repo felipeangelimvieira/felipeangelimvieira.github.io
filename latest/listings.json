@@ -7,6 +7,8 @@
   },
   {
     "listing": "/blog.html",
-    "items": []
+    "items": [
+      "/posts/code_practices/index.html"
+    ]
   }
 ]

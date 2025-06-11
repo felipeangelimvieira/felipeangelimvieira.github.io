@@ -1,5 +1,54 @@
 [
   {
+    "objectID": "posts/code_practices/index.html",
+    "href": "posts/code_practices/index.html",
+    "title": "Can your code pass the test set?",
+    "section": "",
+    "text": "Code is not meant to be written once and never touched again. It is meant to be read, understood, and modified over time. This is especially true in dynamic environments, where requirements change, new features are added, and bugs are fixed. In such environments, code design quality is not just a nice-to-have; it is essential for the long-term success of the project.\nHere, I wish to share some thoughts on code design qualities, focusing on what we want, not how to get there. This is not a guide on how to write good code but rather a reflection on what good code design means in the context of software engineering and data science. This can also be useful for managers, product owners, and stakeholders who do not code but want to understand how quality impacts the product they are building.\nThe key takeaway I wish you to have is that good code design is about resilience. It is about not overfitting to our myopic view of the present, but rather about crafting a solution that can adapt and generalize to future requirements, just like a good machine learning model. It is about how effortless it is to adapt to changes."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#the-map-is-not-the-territory",
+    "href": "posts/code_practices/index.html#the-map-is-not-the-territory",
+    "title": "Can your code pass the test set?",
+    "section": "The map is not the territory",
+    "text": "The map is not the territory\n\n\n\n\n\nThere is this nice quote from Alfred Korzybski that says “the map is not the territory”. This means that any representation of reality is not reality itself, but rather a simplification of it. Also, it is shaped by our biases and limitations.\nBringing it to the context of this post, we can say that product requirements are not the product we are building. They are a simplification of what we want to build. Naturally, details can be missing and assumptions can be wrong, because sometimes reality is more complex than what we can express in words. Sometimes, we just don’t know, and that is okay. We just have to be cautious not to mistake the empty with the void.\nThis idea is key to understanding what comes next. Our code is designed to solve problems, but our definitions of problems are not perfect. They are made by humans, and hence this human aspect and the imprecise understanding of what should be done is deeply connected to the quality of the code we write, even more so than what our linter and unit tests end up being."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#easy-is-not-simple",
+    "href": "posts/code_practices/index.html#easy-is-not-simple",
+    "title": "Can your code pass the test set?",
+    "section": "Easy is not simple",
+    "text": "Easy is not simple\nBefore using the word “simple” to describe code, we should properly define what we mean by that. As gloriously explained by Rich Hickey in his talk “Simplicity Matters,” simple is not the same as easy. Simple is about not packing together unrelated concerns; it is about giving clear responsibility to each component, and making it easy to modify and extend. Easy, on the other hand, is subjective; it is what is closer to your knowledge and experience, it is what you are used to doing, and not necessarily good. We should focus here on the code, not on our perspective of knowledge and experience.\nThis definition aligns with the one in the book “A Philosophy of Software Design” (Ousterhout (2018)), which is a huge inspiration and reference for this post.\n\nComplexity is anything related to the structure of a software system that makes it hard to understand and modify the system\n\nComplexity is not related to the number of lines or functions; it is about the bigger picture. In his book, John Ousterhout also enumerates some symptoms of complexity:\n\nChange amplification: when a change in one part of the system requires changes in many other parts.\nCognitive load: when the code is hard to understand, requiring a lot of mental effort to comprehend.\nUnknown unknowns: when it is hard to diagnose where a change is needed to complete a task.\n\nBasically, simplicity implies less effort in the long term.\nThink about the code as a graph. The nodes are components (e.g., functions) we create, and the edges represent their dependencies. Simple code would be a graph with few edges, where edges represent dependencies of components on others. A dependency can be, for example, an assumption of the structure of the output of one component, the existence of certain methods, etc. The number of edges would be proportional to the complexity of the system and our cognitive load.\n\n\n\n\n\n\n\n\n\nIf we would perturb the graph above, such as changing the output of node 11, it would only affect the nodes that are directly connected to it, and not the whole graph. This is what we want to achieve with our code: a graph with few edges, where we can easily replace parts without affecting the whole system."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#the-objective-function",
+    "href": "posts/code_practices/index.html#the-objective-function",
+    "title": "Can your code pass the test set?",
+    "section": "The objective function",
+    "text": "The objective function\nHere, I’ll try to define a conceptual “objective function”—not mathematical, but rather a guiding principle that should shape how we design and structure our code.\n\nOverfitting to training data\nAt first glance, you might think that code is good if it simply does what it’s supposed to do. However, this perspective often encourages quick-and-dirty solutions and spaghetti code that might solve immediate problems but overlook the bigger picture.\n\n\n\n\n\nImagine an abstract space of requirements, like the one above. We can only see a tiny fraction of our long-term goals clearly. Focusing too narrowly on the present moment—what we already know—makes us overfit to our current understanding, limiting our ability to adapt to new challenges. The more complex and specifically tuned code is, the more likely it is to overfit and struggle when things inevitably change.\n\n\n\n\n\nWhile “easy” solutions may feel quicker and simpler initially, generalizable, well-designed solutions usually save more effort in the long run. They avoid the exponential increase in complexity and maintenance costs that come from constantly adapting overfitted solutions.\n\n\n\n\n\n\n\n\n\n\n\nThe regret\nI’ve often wondered what exactly we’re optimizing for when designing and writing code. Just like machine learning models use metrics to evaluate their performance, we need something to measure code quality. After some thought, I’ve come to see regret as a useful measure.\nIn simple terms, regret is the extra effort spent compared to an ideal solution. This concept is borrowed from machine learning, particularly from the “multi-armed bandit” problem, where decisions must be made based on limited information. The goal there is to minimize regret—the gap between your choices and the best possible outcomes—over time. This mirrors how we write code, making choices with incomplete information and constantly adapting as we learn more.\nExperienced developers naturally have lower regret because they anticipate changes more effectively, ask better questions early on, and build resilient systems from the start.\n\n\n\n\n\n\n\n\n\n\n\nGood code starts before writing code\nSince we rarely have full information upfront, we shouldn’t aim for perfect code immediately. Instead, the first thing we should do is ask questions:\n\nWhat requirements are likely to change?\nWhat requirements are unlikely to change?\nWhat assumptions are we making?\nWhat is the expected lifespan of the product?\n\nWith the answers to these questions, we can start shaping our design. Once we have a draft proposal, we can evaluate how different possible future changes would affect the current structure.\n\n\n\n\n\nDesigning often involves identifying stable components and defining contracts between them. Asking the right questions early helps us group functionalities meaningfully and build systems that remain flexible over time.\n\n\nAvoid premature optimization\nWhile it’s important to anticipate change, guessing too far ahead about possible future requirements can be dangerous. This is known as premature optimization. It can create significant regret—first due to excessive effort upfront, and later because reality rarely matches our early guesses.\n\n\n\n\n\n\n\n\n\nI once found myself in this trap: trying to optimize a codebase that wasn’t even in production yet. I went deep into SOLID principles, endlessly splitting functions and abstracting for flexibility I thought I might need later. But those future requirements never arrived. The code became so abstract that it was hard to maintain, and when real changes eventually came, I had to rewrite everything anyway."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#conclusion",
+    "href": "posts/code_practices/index.html#conclusion",
+    "title": "Can your code pass the test set?",
+    "section": "Conclusion",
+    "text": "Conclusion\nWriting good code isn’t just about making something that works today — it’s about building solutions that can adapt, evolve, and scale as requirements inevitably change. Much like training a machine learning model, if we overfit our code to the present, we may pay a heavy price in the future. Balancing simplicity, flexibility, and pragmatism is what leads to resilient systems with low long-term maintenance cost.\nBy focusing on minimizing regret—the extra effort caused by early design decisions that don’t age well—we can make smarter choices even when information is incomplete. And while experience helps us make better bets, asking the right questions early on dramatically increases our odds of success.\nIn the end, it’s not about writing perfect code — it’s about writing code that can gracefully survive its own future."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#key-takeaways",
+    "href": "posts/code_practices/index.html#key-takeaways",
+    "title": "Can your code pass the test set?",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nCode quality is about resilience, not just correctness\nOverfitting code to today’s requirements creates fragile systems.\nMinimize regret: optimize for adaptability, not hypothetical future needs.\nGood design starts with asking the right questions, not jumping into abstractions."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "About",
+    "section": "",
+    "text": "Hey there. Here I talk about science, data, and other things. Opinions expressed are my own.\nTech Lead @ Mercado Livre, Core Dev @ sktime (pro bono) and developer/creator of Prophetverse."
+  },
+  {
     "objectID": "presentations.html",
     "href": "presentations.html",
     "title": "Presentations",
@@ -11,14 +60,7 @@
     "href": "blog.html",
     "title": "Bytes of Thoughts",
     "section": "",
-    "text": "No matching items"
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "About",
-    "section": "",
-    "text": "Hey there. Here I talk about science, data, and other things. Opinions expressed are my own.\nTech Lead @ Mercado Livre, Core Dev @ sktime (pro bono) and developer/creator of Prophetverse."
+    "text": "Can your code pass the test set?\n\n\n\nsoftware design\n\nmachine learning\n\n\n\n\n\n\n\n\n\nJun 10, 2025\n\n\nFelipe Angelim\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "presentations/bayesian_inference/index.html#about-me",

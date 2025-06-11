@@ -96,7 +96,7 @@ div.csl-indent {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-dde8d7229bfee0f8bb5efd37f0f9ae1e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-905433ffa22618bb005779f2b23c5ce0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -285,7 +285,7 @@ window.Quarto = {
 </section>
 <section id="simulating-imbalanced-region-data" class="level2">
 <h2 class="anchored" data-anchor-id="simulating-imbalanced-region-data">1. Simulating Imbalanced region Data</h2>
-<div id="b71f262f" class="cell" data-execution_count="1">
+<div id="6f51290b" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Import libraries and define utility functions</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
@@ -403,7 +403,7 @@ window.Quarto = {
 </details>
 </div>
 <p>We simulate a dataset of 400 purchase decision samples distributed unevenly across four regions. This data could be coming from a survey conducted with current clients, to analyze how much they would pay to change their subscription or product to new option. Specifically, region 3 has significantly fewer observations, representing realistic data imbalance.</p>
-<div id="cbb6bb1b" class="cell" data-execution_count="2">
+<div id="5d02ae04" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Generate imbalanced region data</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------- Simulated data (with imbalanced regions) ----------</span></span>
@@ -429,7 +429,7 @@ window.Quarto = {
 <span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> dist.Bernoulli(probs<span class="op">=</span>p_true).sample(key_y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="a311cbe1" class="cell" data-execution_count="3">
+<div id="4280407b" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>{<span class="st">"y"</span> : y, <span class="st">"region_idx"</span> : region_idx}</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -508,7 +508,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<div id="948b3a89" class="cell" data-execution_count="4">
+<div id="927250e1" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Prepare common variables for plotting</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define price_grid, true_curves and colors early as they are needed for multiple plots</span></span>
@@ -542,7 +542,7 @@ p_{50} \;\sim\; \mathrm{HalfNormal}(20),
 <p><span class="math display">\[
 lambda \;\sim\; \mathrm{HalfNormal}(1000) \; slope = \log(1 + \lambda)
 \]</span></p>
-<div id="c483ab30" class="cell" data-execution_count="5">
+<div id="ab9b221d" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Define the no-pooling model</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> model_no_pool(price, region, n_regions<span class="op">=</span><span class="dv">4</span>, y<span class="op">=</span><span class="va">None</span>):</span>
@@ -558,7 +558,7 @@ lambda \;\sim\; \mathrm{HalfNormal}(1000) \; slope = \log(1 + \lambda)
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        numpyro.sample(<span class="st">"obs"</span>, dist.Bernoulli(probs<span class="op">=</span>p), obs<span class="op">=</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="4e832578" class="cell" data-execution_count="6">
+<div id="5894f6f6" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Run inference for the no-pooling model</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run inference for no-pooling model</span></span>
@@ -572,7 +572,7 @@ lambda \;\sim\; \mathrm{HalfNormal}(1000) \; slope = \log(1 + \lambda)
 <section id="visualizing-no-pooling-model-estimates" class="level3">
 <h3 class="anchored" data-anchor-id="visualizing-no-pooling-model-estimates">Visualizing No-Pooling Model Estimates</h3>
 <p>We now visualize the estimated purchase probability curves from the no-pooling model for each region, along with their 95% credible intervals and the true underlying curves.</p>
-<div id="57def0e4" class="cell" data-execution_count="7">
+<div id="5f67edbb" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Process and plot no-pooling model results</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Process and plot no-pooling results</span></span>
@@ -618,7 +618,7 @@ p_{50,j} \;\sim\; \mathrm{HalfNormal}\bigl(\sigma_{p_{50}}\bigr),
 slope_{j} \;=\; \log\bigl(1 + \tilde{\lambda}_j\bigr),
 \quad j=0,\dots,J-1 \\[1ex]
 \]</span></p>
-<div id="85863ef6" class="cell" data-execution_count="8">
+<div id="de781fb8" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Define the hierarchical model</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> model(price, region, n_regions<span class="op">=</span><span class="dv">4</span>, y<span class="op">=</span><span class="va">None</span>):</span>
@@ -647,7 +647,7 @@ slope_{j} \;=\; \log\bigl(1 + \tilde{\lambda}_j\bigr),
 <span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        numpyro.sample(<span class="st">"obs"</span>, dist.Bernoulli(probs<span class="op">=</span>p), obs<span class="op">=</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="c8323b9d" class="cell" data-execution_count="9">
+<div id="54adf195" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Render the hierarchical model structure</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>model_args <span class="op">=</span> (price, region_idx, n_regions, y) <span class="co"># Ensure n_regions is correctly passed</span></span>
@@ -664,7 +664,7 @@ slope_{j} \;=\; \log\bigl(1 + \tilde{\lambda}_j\bigr),
 <section id="running-bayesian-inference-for-the-hierarchical-model" class="level3">
 <h3 class="anchored" data-anchor-id="running-bayesian-inference-for-the-hierarchical-model">Running Bayesian Inference for the Hierarchical Model</h3>
 <p>We use the No-U-Turn Sampler (NUTS) provided by NumPyro to infer the posterior distributions of our hierarchical model parameters:</p>
-<div id="452b97cb" class="cell" data-execution_count="10">
+<div id="b06650e1" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Run inference for the hierarchical model</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inference using NUTS</span></span>
@@ -697,7 +697,7 @@ Number of divergences: 0</code></pre>
 <section id="visualizing-hierarchical-model-estimates" class="level3">
 <h3 class="anchored" data-anchor-id="visualizing-hierarchical-model-estimates">Visualizing Hierarchical Model Estimates</h3>
 <p>Similarly, we visualize the estimated purchase probability curves from the hierarchical model.</p>
-<div id="c239c206" class="cell" data-execution_count="11">
+<div id="56e52dd4" class="cell" data-execution_count="11">
 <details class="code-fold">
 <summary>Process and plot hierarchical model results</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Process and plot hierarchical results</span></span>
@@ -725,7 +725,7 @@ Number of divergences: 0</code></pre>
 <section id="comparing-model-predictions" class="level2">
 <h2 class="anchored" data-anchor-id="comparing-model-predictions">4. Comparing Model Predictions</h2>
 <p>Now we compare the predictions from both models—no-pooling and hierarchical—side-by-side for each region. This allows us to directly observe the effect of hierarchical pooling, especially for regions with sparse data.</p>
-<div id="28d286ee" class="cell" data-execution_count="12">
+<div id="80b42de4" class="cell" data-execution_count="12">
 <details class="code-fold">
 <summary>Plot side-by-side comparison of models per region</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># mean_h, low_h, high_h are from hierarchical model processing</span></span>
