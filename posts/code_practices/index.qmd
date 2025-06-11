@@ -6,10 +6,9 @@ format:
     toc-depth: 3
     toc-expand: 3
 author: "Felipe Angelim"
-date: "2025-05-27"
+date: "2025-06-10"
 draft: false
 categories: [software design, machine learning]
-thumbnail: "imgs/darkroom.png"
 jupyter: python3
 bibliography: bibliography.bib
 ---
@@ -161,24 +160,19 @@ plt.show()
 
 ## The objective function
 
-Here, I'll try to define what is the objective function we should be optimizing when writing code. This is not a mathematical function, but rather a conceptual one. It is the guiding principle that should shape our design decisions and code structure.
-
+Here, I'll try to define a conceptual "objective function"—not mathematical, but rather a guiding principle that should shape how we design and structure our code.
 
 ### Overfitting to training data
 
-One might naively think that if a code does what it needs to do, it is good code. This though
-can lead developers to write *easy* solutions and spaghetti code that work for the present moment but is blind to the bigger picture. 
+At first glance, you might think that code is good if it simply does what it's supposed to do. However, this perspective often encourages quick-and-dirty solutions and spaghetti code that might solve immediate problems but overlook the bigger picture.
 
+![](imgs/illustration1.png){width=70% fig-align="center"}
 
-![](imgs/illustration1.png){width=70% fig-align="center" }
-
-Think about an abstract space of requirements, as in the figure above. What we see is just a small fraction of
-the long-term objectives. Focusing too much on what we know right now makes us overfit to the training data, failing to generalize to unseen examples. **The more complex a code is, the more it is prone to overfitting**. The more hand-tuned it is to current needs, the less it can adapt to future changes. 
-
+Imagine an abstract space of requirements, like the one above. We can only see a tiny fraction of our long-term goals clearly. Focusing too narrowly on the present moment—what we already know—makes us overfit to our current understanding, limiting our ability to adapt to new challenges. **The more complex and specifically tuned code is, the more likely it is to overfit** and struggle when things inevitably change.
 
 ![](imgs/illustration2.png){width=70% fig-align="center"}
 
-The easy will possibly lead to less effort on the short term, and we will easily deliver what needs to be delivered. Over time, however, the simples, generalizable code pays back, and do not lead to an infinite increase in effort to adapt to new requirements.
+While "easy" solutions may feel quicker and simpler initially, generalizable, well-designed solutions usually save more effort in the long run. They avoid the exponential increase in complexity and maintenance costs that come from constantly adapting overfitted solutions.
 
 ```{python}
 # | echo: false
@@ -202,45 +196,31 @@ dates = pd.to_datetime(
 overfitted_cum = [0, 3, 10, 15, 25, 50]
 robust_cum = [0, 12, 13, 13.5, 14, 14.5]
 
-# Already start at zero, so just copy
-overfitted_effort = overfitted_cum
-robust_effort = robust_cum
-
 # Regret = extra effort caused by overfitting
-regret = [o - r for o, r in zip(overfitted_effort, robust_effort)]
+regret = [o - r for o, r in zip(overfitted_cum, robust_cum)]
 
-# ──────────────── Plot ──────────────────
-fig, ax = plt.subplots(
-    figsize=(8, 3),
-)
+# Plot
+fig, ax = plt.subplots(figsize=(8, 3))
+ax.plot(dates, overfitted_cum, marker="o", label="Overfitted code")
+ax.plot(dates, robust_cum, marker="o", label="Well-designed code")
 
-# Top subplot: cumulative effort
-ax.plot(dates, overfitted_effort, marker="o", label="Overfitted code")
-ax.plot(dates, robust_effort, marker="o", label="Well-designed code")
-
-# Requirement-change markers on both axes
 for d in dates[1:]:
-    ax.axvline(d, linestyle="--", linewidth=0.8, alpha=0.3, color="black")
     ax.axvline(d, linestyle="--", linewidth=0.8, alpha=0.3, color="black")
 
 ax.set_ylabel("Effort (relative units)")
 ax.set_title("Effort required over time as requirements evolve")
 ax.legend()
-# remvoe grid lines
 ax.grid(False)
-
+plt.show()
 ```
 
 ### The regret
 
-I wondered a lot about what would be the true objective function we are trying to optimize when writing code and creating solutions. As machine-learning models have a metrics to define their performance, code design quality must have a way to measure how well it is designed.
+I've often wondered what exactly we're optimizing for when designing and writing code. Just like machine learning models use metrics to evaluate their performance, we need something to measure code quality. After some thought, I've come to see *regret* as a useful measure.
 
-I came to the conclusion that the regret is a good measure of code design quality. Regret is the cumulative extra effort when compared to the best possible solution. This notion is already used in some domains of Machine Learning, particularly in Multi-armed Bandits. In Multi-armed bandits, we have access to a set of actions, and we want to choose the one that provides the highest average reward. We don't have access to full information, and we have to make decisions based on the information we have at hand. In that sense, we try to make the best sequence of actions to minimize regret over time. 
-This is similar to how we write code: we have to make decisions based on the requirements we know, and we have to adapt to changes over time. Since it is not possible to have a perfect solution from the start, we usually think about how fast we converge to the optimal solution, considering there is one. Hence, regret tells us how good we are using the current information to make decisions.
+In simple terms, regret is the extra effort spent compared to an ideal solution. This concept is borrowed from machine learning, particularly from the "multi-armed bandit" problem, where decisions must be made based on limited information. The goal there is to minimize regret—the gap between your choices and the best possible outcomes—over time. This mirrors how we write code, making choices with incomplete information and constantly adapting as we learn more.
 
-This is where experience comes in. Experienced developers can anticipate future requirements and design their code accordingly, reducing the regret. They can see beyond the current requirements and build a solution that is more resilient to change. They ask the correct questions to stakeholders, they have already seen similar changes and know what will probably come next.
-
-
+Experienced developers naturally have lower regret because they anticipate changes more effectively, ask better questions early on, and build resilient systems from the start.
 
 ```{python}
 # | echo: false
@@ -249,10 +229,7 @@ This is where experience comes in. Experienced developers can anticipate future 
 # Calculate the cumulative regret
 cumulative_regret = [sum(regret[: i + 1]) for i in range(len(regret))]
 
-fig, ax = plt.subplots(
-    figsize=(8, 4),
-)
-# Plot both regret and cumulative regret
+fig, ax = plt.subplots(figsize=(8, 4))
 ax.fill_between(dates, regret, alpha=0.25, label="Regret", color="blue")
 ax.plot(dates, regret, marker="o", linewidth=1)
 ax.set_ylabel("Regret")
@@ -261,34 +238,27 @@ ax.legend()
 ax.grid(False)
 fig.autofmt_xdate()
 fig.tight_layout()
-
 plt.show()
 ```
 
-
 ### Good code starts before writing code
 
+Since we rarely have full information upfront, we shouldn't aim for perfect code immediately. Instead, the first thing we should do is **ask questions**:
 
-Taking into consideration that we have limited information, we should not try to write the perfect code from the start. The first thing we should do is **ask questions**:
+* What requirements are likely to change?
+* What requirements are unlikely to change?
+* What assumptions are we making?
+* What is the expected lifespan of the product?
 
-* What are the requirements that most likely will change in the future?
-* What are the requirements that will not change?
-* What are the assumptions we are making?
-* What is the expected lifespan of the product we are building?
-
-With the answers to these questions, we can start thinking about the design of the code. Once we have a proposal, think about how the considered future changes would affect the design.
-
+With the answers to these questions, we can start shaping our design. Once we have a draft proposal, we can evaluate how different possible future changes would affect the current structure.
 
 ![](imgs/darkroom.png){width=50% fig-align="center" style="border-radius: 40px;"}
 
-
-Designing usually involves defining components and contracts between them. Defining these components involves identifies parts of the code that are stable. Hence, by asking questions, we can start to figure out what functionalitites should be clustered together.
-
+Designing often involves identifying stable components and defining contracts between them. Asking the right questions early helps us group functionalities meaningfully and build systems that remain flexible over time.
 
 ### Avoid premature optimization
 
-While we want to optimize and make our code general, guessing what will be the future requirements and diving too deep into the details is not a good idea. We call this "premature optimization", and can create a peak of regret, due to large effort at the start, followed by another peak of regret when the requirements change and we have to re-write our abstractions and ideas to what is truly needed.
-
+While it's important to anticipate change, guessing too far ahead about possible future requirements can be dangerous. This is known as *premature optimization*. It can create significant regret—first due to excessive effort upfront, and later because reality rarely matches our early guesses.
 
 ```{python}
 # | echo: false
@@ -297,7 +267,7 @@ While we want to optimize and make our code general, guessing what will be the f
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# ------------------- Data -------------------
+# Data
 dates = pd.to_datetime(
     [
         "2025-01-01",
@@ -313,26 +283,25 @@ overfitted_cum = [0, 30, 35, 35, 35, 35]
 robust_cum = [0, 12, 13, 13.5, 14, 14.5]
 
 regret = [o - r for o, r in zip(overfitted_cum, robust_cum)]
-cumulative_regret = [sum(regret[: i + 1]) for i in range(len(regret))]
 
-# ------------------- Plot -------------------
+# Plot
 fig, axs = plt.subplots(nrows=2, sharex=True, figsize=(8, 6))
 
-# ─── Panel 1: Effort ────────────────────────
+# Effort
 ax_effort = axs[0]
 ax_effort.plot(dates, overfitted_cum, marker="o", label="Premature optimization")
 ax_effort.plot(dates, robust_cum, marker="o", label="Well-designed code")
 ax_effort.set_ylabel("Effort (relative units)")
 ax_effort.set_title("Effort vs. Regret as requirements evolve")
-ax_effort.legend(loc="upper left")  # legend for effort subplot
+ax_effort.legend(loc="upper left")
 
-# ─── Panel 2: Regret ────────────────────────
+# Regret
 ax_regret = axs[1]
 ax_regret.fill_between(dates, regret, alpha=0.25, label="Regret", color="blue")
 ax_regret.set_ylabel("Regret (extra effort)")
-ax_regret.legend(loc="upper left")  # legend for regret subplot
+ax_regret.legend(loc="upper left")
 
-# ─── Shared styling ────────────────────────
+# Styling
 for ax in axs:
     for d in dates[1:]:
         ax.axvline(d, linestyle="--", linewidth=0.8, alpha=0.3, color="black")
@@ -343,9 +312,19 @@ fig.tight_layout()
 plt.show()
 ```
 
-I once found myself in a situation where I was trying to optimize a piece of code that was not even in production yet. I was radically applying SOLID principles, splitting functions into smaller and smaller pieces, trying to make it as general as possible. I was trying to anticipate future requirements that never came. The code was so abstract that it was hard to understand, and when the requirements changed, I had to rewrite everything anyway. 
+I once found myself in this trap: trying to optimize a codebase that wasn't even in production yet. I went deep into SOLID principles, endlessly splitting functions and abstracting for flexibility I thought I might need later. But those future requirements never arrived. The code became so abstract that it was hard to maintain, and when real changes eventually came, I had to rewrite everything anyway.
 
-## Takeaways
+## Conclusion
 
-T
+Writing good code isn’t just about making something that works today — it’s about building solutions that can adapt, evolve, and scale as requirements inevitably change. Much like training a machine learning model, if we overfit our code to the present, we may pay a heavy price in the future. Balancing simplicity, flexibility, and pragmatism is what leads to resilient systems with low long-term maintenance cost.
 
+By focusing on minimizing *regret*—the extra effort caused by early design decisions that don’t age well—we can make smarter choices even when information is incomplete. And while experience helps us make better bets, asking the right questions early on dramatically increases our odds of success.
+
+In the end, it’s not about writing perfect code — it’s about writing code that can gracefully survive its own future.
+
+## Key Takeaways
+
+- Code quality is about resilience, not just correctness 
+- Overfitting code to today's requirements creates fragile systems.
+- Minimize regret: optimize for adaptability, not hypothetical future needs.
+- **Good design starts with asking the right questions, not jumping into abstractions.**
