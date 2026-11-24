@@ -13,6 +13,6 @@ about:
 
 ---
 
-Hey there. Here I talk about science, data, and other things. Opinions expressed are my own.
+Independent Researcher & Staff II Data Scientist @ QuintoAndar.
 
-Tech Lead @ Mercado Livre, Core Dev @ sktime (pro bono) and developer/creator of Prophetverse.
+

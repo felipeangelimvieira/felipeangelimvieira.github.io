@@ -1,0 +1,87 @@
+---
+title: "Partition Tree: Conditional Density Estimation over General Outcome Spaces"
+author: "Felipe Angelim"
+format: 
+  revealjs:
+    theme: [default, custom.scss] # Example: add a custom.scss for styling
+    slide-number: true
+    #chalkboard: true
+    #logo: logo.png # Optional: if you have a logo
+    embed-resources: true # Good for sharing a single HTML file
+    incremental: true # Makes lists appear one item at a time by default
+    # toc: true # Adds a table of contents
+    # toc-depth: 2
+    width: 1280
+    height: 720
+---
+
+# Partition Tree
+
+## CART Trees
+
+* Cart trees divide the X space and, for classification, provides probabilities; for regression, provides a point prediction.
+* Think about a leaf in a cart during prediction. It ignores all the empty space that we have in the target dimension and reduce all samples to 1 point.
+* It is assymetric and a little bit weird that we cannot provide probabilistic estimates with trees. However, when we look at the data, we can clearly see with our own eyes regions of low probability.
+* When we reflect what gives the notion of this "low probability",
+it is the empty space or, more specifically, the **low density**.
+When a CART tree compresses the samples to a point, it ignores the
+empty space. We should somehow use this information
+
+## Adding a Y partition
+
+* If we take the same data, and introduce a split on y, we see
+that we can divide regions of high density and low density. This
+is a clue.
+* How do we define density? Well, there is a field of mathematics
+called measure theory that answers exactly that, and it was the responsible for connecting the notion of probability of discrete
+and continuous variables in a single framework, i.e., exactly the
+strange assymetry we have in CART trees of not providing a single probabilistic framework
+
+## A crash course in measure theory
+
+* Measure theory, as the name says, tells us how to measure things. And probabilities are measures. Take a cell in that XY space. We can measure the joint XY probability of our samples by
+  counting how much samples fall in this rectangle vs the entire space. For the marginal X probability measure, we measure how many samples fall in this X-band, defined by the X-side of the cell.
+* Measure theory also gives us the notion of density. Probability density is not so different of density of objects itself. When we compute the density of water, we say how much matter (weight) it
+contains in a volume, so it is a ratio of measures (mass and space volume)
+* For conditional probabilities, the conditional measure is defined as the ratio of our joint XY-measure and a measure of marginal X probability times the Y volume. The density is the infinitesimal notion of this, also called Radon-Nikodym derivative.
+
+
+## Partition Tree
+
+* Partition Tree is a new paradigm for bulding trees, where we also partition by Y-dimension, and we try to maximize the density of the samples, attributing leaf-constant probability densities.
+  [illustration of a xy plot and rectangles, coloured according to their density]
+
+* The algorithm grows the tree by searching, at each step, the X or Y column provides the most gain in terms of logloss
+[animation take a rectangle, partition into two, the two having different colors, and shows the gain formula]
+* Runtime complexity: the same of CART trees!
+  
+## Partition Tree - predict time
+
+* At prediction, two options:
+  * Query the density at a pair (x,y): we traverse the tree as usual
+  * Query the conditional distribution of Y | X, given covariates x: we traverse the tree and ignore y-splits, going to both branches if the split was on Y
+  
+## Example of predictions
+
+[example of prediction for two datasets with Partition Tree and Partition Forest]
+
+
+## Results for regression and classification
+
+[tables from the paper]
+
+# Future research
+
+## Balancing Partition Forest
+
+Applications to causal inference
+
+https://arxiv.org/abs/2611.23524v1
+
+## Flow Partition Tree
+
+State-of-the-art probabilistic regression
+with trees
+[image illustrating the algorithm]
+
+[table comparing the different methods]

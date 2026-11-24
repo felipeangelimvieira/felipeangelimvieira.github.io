@@ -3,3 +3,4 @@
 **/gitignore
 _site/
 _freeze
+**/*.quarto_ipynb

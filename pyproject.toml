@@ -1,25 +1,21 @@
-[tool.poetry]
+[project]
 name = "felipeangelimvieira-github-io"
 version = "0.1.0"
 description = ""
-authors = ["felipeangelimvieira <felipeangelim@gmail.com>"]
-readme = "README.md"
-packages = [{include = "felipeangelimvieira"}]
+authors = [{ name = "felipeangelimvieira", email = "felipeangelim@gmail.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "jupyter>=1.1.1,<2",
+    "pyyaml>=6.0.2,<7",
+    "pandas>=2.2.3,<3",
+    "matplotlib>=3.10.3,<3.11",
+    "prophetverse>=0.7.1,<0.8 ; python_version < '3.13'",
+    "arviz>=0.21.0,<0.22",
+    "jax<0.6.0",
+    "lifelines>=0.30.0,<0.31",
+    "graphviz>=0.20.3,<0.21",
+    "networkx>=3.5,<4",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-jupyter = "^1.1.1"
-pyyaml = "^6.0.2"
-pandas = "^2.2.3"
-matplotlib = "^3.10.3"
-prophetverse = {version = "^0.7.1", python = ">=3.11,<3.13"}
-arviz = "^0.21.0"
-jax = "<0.6.0"
-lifelines = "^0.30.0"
-graphviz = "^0.20.3"
-networkx = "^3.5"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.uv]
+package = false

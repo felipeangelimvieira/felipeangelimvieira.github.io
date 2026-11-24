@@ -1,0 +1,30 @@
+/*-- scss:defaults --*/
+$body-bg: #fbfaf6;
+$body-color: #213b40;
+$link-color: #006d68;
+$presentation-heading-color: #19383b;
+$font-family-sans-serif: "Avenir Next", "Source Sans Pro", Arial, sans-serif;
+$presentation-heading-font: "STIX Two Text", Georgia, serif;
+$presentation-font-size-root: 34px;
+$presentation-h1-font-size: 2.85em;
+$presentation-h2-font-size: 1.65em;
+
+/*-- scss:rules --*/
+.reveal h1, .reveal h2 { font-weight: 500; letter-spacing: -.035em; }
+.reveal h2 { margin-bottom: .55em; }
+.reveal strong { color: #00645f; }
+.reveal .slides section .columns { align-items: center; gap: 1.25em; }
+.reveal .r-stack > p { margin: 0; width: 100%; }
+.reveal .plot img { display: block; width: 100%; max-height: none; margin: 0; }
+.reveal .result { font-size: 1.13em; }
+.reveal .source { font-size: .62em; color: #475d60; }
+.reveal .benchmarks table {
+  font-size: .78em;
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+}
+.reveal .benchmarks table :is(td, th) { padding: .16em .5em; }
+.reveal .benchmarks tr > :nth-last-child(2) { border-left: 2px solid #728f8a; }
+.reveal .benchmarks table col { width: auto !important; }
+.reveal .benchmarks table tbody tr:last-child { border-top: 2px solid #728f8a; }
+.reveal #title-slide .subtitle { max-width: 21em; margin: .4em auto 1em; }
