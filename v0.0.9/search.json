@@ -1,0 +1,198 @@
+[
+  {
+    "objectID": "presentations.html",
+    "href": "presentations.html",
+    "title": "Presentations",
+    "section": "",
+    "text": "Partition Tree\n\n\nConditional Density Estimation over General Outcome Spaces\n\n\n\n\n\n\n\n\n\n\nFelipe Angelim\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "About",
+    "section": "",
+    "text": "Independent Researcher & Staff II Data Scientist @ QuintoAndar."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#where-would-a-regression-tree-put-its-prediction",
+    "href": "presentations/partition_tree/index.html#where-would-a-regression-tree-put-its-prediction",
+    "title": "Partition Tree",
+    "section": "Where would a regression tree put its prediction?",
+    "text": "Where would a regression tree put its prediction?\n\n\n\n\n\n\n\nA CART split groups observations by xx. Look at the 12 points in the shaded leaf.\nIn classification, class frequencies give us a probability for each label.\n\nIn squared-error regression, the prediction is the leaf mean, 2.75. What does it tell us about the gap?\n\n\n\nAsk for a prediction before revealing the line. Every observation in this leaf is either below 1 or above 3. The mean is a good answer to a squared-error question. If we want to know what a future outcome might look like, the empty space between the bands matters too."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#probability-as-a-measure",
+    "href": "presentations/partition_tree/index.html#probability-as-a-measure",
+    "title": "Partition Tree",
+    "section": "A probability space (Ω,ℱ,P)(\\Omega, \\mathcal{F}, P)",
+    "text": "A probability space (Ω,ℱ,P)(\\Omega, \\mathcal{F}, P)\n\n\n\nAndrei Kolmogorov\nFoundations of the Theory of Probability, 1933\n\n\n\n\n\n\n\n\nKolmogorov’s 1933 framework gives discrete and continuous probability the same starting point. The sample space Ω\\Omega lists the possible outcomes. The sigma-algebra ℱ\\mathcal F specifies the measurable events, and PP assigns their probabilities. Point to the dot. Any point in the square can be the outcome ω\\omega.\nOn the first click, treat each tile as a block of outcomes. “Did the point land in either shaded tile?” is one event. Each tile contains infinitely many points and is an atom of this σ\\sigma-algebra. Choosing which of the 16 tiles to include gives 2162^{16} events.\nOn the second click, read the ruler from left to right in the same order as the tiles, row by row. Segment length shows probability. The shaded tiles have equal area but carry different masses. Since they are disjoint, their probabilities add.\nFor a continuous example, keep the same square, choose its Borel σ\\sigma-algebra, and let probability be uniform area. Now each singleton is an event of probability zero, while the whole square has probability one. Countable additivity is consistent with that because the square contains uncountably many points.\nPhotograph by Konrad Jacobs, © Mathematisches Forschungsinstitut Oberwolfach. Portrait on Wikimedia Commons · CC BY-SA 2.0 DE"
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#die-sigma-algebras",
+    "href": "presentations/partition_tree/index.html#die-sigma-algebras",
+    "title": "Partition Tree",
+    "section": "One die, three levels of information",
+    "text": "One die, three levels of information\nRoll a fair six-sided die. The sample space is always Ω={1,2,3,4,5,6}\\Omega=\\{1,2,3,4,5,6\\}.\n\n\n\nWhat we learn\nBlocks of outcomes\nMeasurable events\n\n\n\n\nℱ0\\mathcal F_0 · No face information\nΩ\\Omega\n2\n\n\nℱ1\\mathcal F_1 · Odd or even\n{1,3,5},{2,4,6}\\{1,3,5\\},\\ \\{2,4,6\\}\n4\n\n\nℱ2\\mathcal F_2 · Exact face\n{1},{2},…,{6}\\{1\\},\\ \\{2\\},\\ \\ldots,\\ \\{6\\}\n64\n\n\n\n\nMeasurable events are unions of these blocks, called atoms. Finer atoms give ℱ0⊊ℱ1⊊ℱ2\\mathcal F_0\\subsetneq\\mathcal F_1\\subsetneq\\mathcal F_2.\n\n\nParity lets us ask if the roll was even, with probability 1/21/2. The exact face lets us also ask if it was 22, with probability 1/61/6.\n\n\nWith one atom, ℱ0={⌀,Ω}\\mathcal F_0=\\{\\varnothing,\\Omega\\}. With two atoms, ℱ1\\mathcal F_1 also contains the odd and even events. With six singleton atoms, ℱ2=2Ω\\mathcal F_2=2^\\Omega. These collections contain Ω\\Omega and are closed under complements and countable unions. The fair-die measure sums the 1/61/6 masses of the faces in each event. If we reveal the parity first and then the exact face of the same roll, the nested sigma-algebras form a filtration."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#tree-over-partition",
+    "href": "presentations/partition_tree/index.html#tree-over-partition",
+    "title": "Partition Tree",
+    "section": "From a partition to a tree",
+    "text": "From a partition to a tree\n\n\n\n\nStart at the root, the whole square. Each fork cuts the current rectangle in half. Follow the teal path through four cuts to reach tile AA. The orange path ends at BB. Our event is the union of those two leaves. Here we chose the cuts by hand. Where would a tree cut if it learned from the data?"
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#what-if-we-also-split-the-outcome",
+    "href": "presentations/partition_tree/index.html#what-if-we-also-split-the-outcome",
+    "title": "Partition Tree",
+    "section": "What if we also split the outcome?",
+    "text": "What if we also split the outcome?\n\n\n\n\n\n\n\nKeep the same xx-band. Make one cut at y=3y=3.\n\nNine observations fall in the top unit of height. Three occupy the lower three units.\n\n\nPer unit of outcome space, the upper cell is nine times as dense.\n\n\n\nGive the audience a moment to count. The lower cell holds a quarter of the mass over three quarters of the height. Each rectangle will get one density. A further split could distinguish the little cluster near zero from the gap above it."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#measuring-the-mass-in-a-rectangle",
+    "href": "presentations/partition_tree/index.html#measuring-the-mass-in-a-rectangle",
+    "title": "Partition Tree",
+    "section": "Measuring the mass in a rectangle",
+    "text": "Measuring the mass in a rectangle\n\n\n\n\nĉ(x,y)={3/4(x,y)∈A1,1/12(x,y)∈A2,1/4(x,y)∈A3.\\widehat c(x,y)=\n\\begin{cases}\n3/4  & (x,y)\\in A_1,\\\\\n1/12 & (x,y)\\in A_2,\\\\\n1/4  & (x,y)\\in A_3.\n\\end{cases}\n\n\nTake the upper-left cell A=A1=AX×AYA=A_1=A_X\\times A_Y.\nJoint mass counts points in the cell. P̂XY(A)=9/20\\widehat P_{XY}(A)=9/20\n\nMarginal mass counts every point in its xx-band. P̂X(AX)=12/20\\widehat P_X(A_X)=12/20\n\n\nThe cell holds 9/129/12 of the band’s outcomes over a height of μY(AY)=1\\mu_Y(A_Y)=1.\n\n\nĉA=nXY(A)nX(AX)μY(AY)=912⋅1=34.\\widehat c_A=\\frac{n_{XY}(A)}{n_X(A_X)\\,\\mu_Y(A_Y)}\n=\\frac{9}{12\\cdot 1}=\\frac34.\n\n\n\nTrace the rectangle, then extend it vertically to cover its entire x-projection. Both mass estimates count the same twenty observations, so the sample size cancels in their ratio. Read the density formula against the picture. The upper-left cell has mass 3/4 over one unit of height. The lower-left cell has mass 1/4 over three units. On the right, all eight outcomes share one cell of height four, giving density 1/4."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#which-split-should-the-tree-make",
+    "href": "presentations/partition_tree/index.html#which-split-should-the-tree-make",
+    "title": "Partition Tree",
+    "section": "Which split should the tree make?",
+    "text": "Which split should the tree make?\n\n\n\n\n\n\n\nThe parent assigns density 1/41/4 throughout the band.\n\nAfter the cut, the upper density is 3/43/4. The lower density is 1/121/12.\n\n\nScore each observation by the change in its log density. For this cut, Ĝ=9log⁡3+3log⁡(1/3)20≈𝟎.𝟑𝟑.\\widehat G\n=\\frac{9\\log 3+3\\log(1/3)}{20}\n\\approx \\mathbf{0.33}.\n\n\n\nThe parent density is 12 divided by the product of 12 and 4. In the upper cell the density triples. In the lower cell it falls to a third of the old value. The eight points on the right have no change in score. The denominator is twenty because this gain is measured per training observation across the whole tree. These are natural logarithms, so the gain is in nats per observation."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#growing-a-partition-tree",
+    "href": "presentations/partition_tree/index.html#growing-a-partition-tree",
+    "title": "Partition Tree",
+    "section": "Growing a Partition Tree",
+    "text": "Growing a Partition Tree\nTry each admissible XX or YY split in each current leaf. Compare the two children with their parent using the same gain.\nĜ(A→L,R)=∑B∈{L,R}nXY(B)Nlog⁡ĉBĉA\\widehat G(A\\to L,R)=\n\\sum_{B\\in\\{L,R\\}}\\frac{n_{XY}(B)}{N}\n\\log\\frac{\\widehat c_B}{\\widehat c_A}\n\nSplit the leaf with the largest reduction in the training log-loss surrogate. Repeat until the split budget is spent or no admissible split remains.\n\n\nSorted thresholds need one scan per coordinate. For balanced growth, the paper gives O(dZNlog⁡N)O(d_Z N\\log N) with maintained presorted indices, the same order as presorted CART.\n\n\nAn x-cut changes which observations supply the covariate denominator. A y-cut keeps that denominator and changes the outcome volumes. The gain uses unnormalized leaf heights, which makes it local. A priority queue keeps the best split available at every leaf. Here d_Z counts the splittable input and outcome coordinates. Sorting afresh within each node gives the balanced-tree comparison O(d_Z N log² N). These are training costs."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#x-split-scan",
+    "href": "presentations/partition_tree/index.html#x-split-scan",
+    "title": "Partition Tree",
+    "section": "Scanning for an XX-split",
+    "text": "Scanning for an XX-split\nSweep x=tx=t through the upper-left leaf, testing the midpoints in its xx-band.\n\n\n  \n\n\n\n \n  \n   \n    \n    image/svg+xml\n    \n     \n      Matplotlib v3.10.9, https://matplotlib.org/\n     \n    \n   \n  \n \n \n  \n \n \n  \n   \n  \n  \n   \n    \n   \n   \n    \n   \n   \n    \n   \n   \n    \n   \n   \n    \n     \n      \n       \n      \n      \n       \n      \n     \n     \n      0.00\n     \n    \n    \n     \n      \n       \n      \n     \n     \n      0.25\n     \n    \n    \n     \n      \n       \n      \n     \n     \n      0.50\n     \n    \n    \n     \n      \n       \n      \n     \n     \n      0.75\n     \n    \n    \n     \n      \n       \n      \n     \n     \n      1.00\n     \n    \n    \n     Covariate x\n    \n   \n   \n    \n     \n      \n       \n      \n      \n       \n      \n     \n     \n      0\n     \n    \n    \n     \n      \n       \n      \n     \n     \n      1\n     \n    \n    \n     \n      \n       \n      \n     \n     \n      2\n     \n    \n    \n     \n      \n       \n      \n     \n     \n      3\n     \n    \n    \n     \n      \n       \n      \n     \n     \n      4\n     \n    \n    \n     Outcome y\n    \n   \n   \n    \n   \n   \n    \n   \n   \n    \n   \n   \n    \n   \n   \n    \n     \n    \n    \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n    \n   \n  \n \n \n  \n   \n  \n \n\n\n\n  \n  \n    \n    \n\n\n\nCount\nLeft\nRight\n\n\n\n\nnX\n0\n12\n\n\nnXY\n0\n9\n\n\n\n\n    Green rings mark the samples counted in nX on the left.\n       Red centers mark the ones also counted in nXY.\n    \n      Play\n      Candidate \n      \n    \n  \n\n\nAngelim & Leite, Appendix B.1, Algorithm 1\n\nThe upper-left leaf has AX=[0,0.5]A_X=[0,0.5] and AY=(3,4]A_Y=(3,4]. Sort the samples in AXA_X by xx and make a second sorted list for the samples in the leaf. Each pointer advances to the last value at or below tt. With unit weights, the pointers give the left counts and subtracting from the parent totals gives the right counts. Pause at t=0.10t=0.10 to show that the low point at x=0.08x=0.08 advances only the covariate pointer. At t=0.25t=0.25, the left child has six covariate samples and five joint samples. Each list is traversed at most once, and the four counts feed the gain for each admissible split."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#predicting-with-partition-tree",
+    "href": "presentations/partition_tree/index.html#predicting-with-partition-tree",
+    "title": "Partition Tree",
+    "section": "Predicting with Partition Tree",
+    "text": "Predicting with Partition Tree\n\n\n\n\n\n\n\n\nGiven (x,y)=(0.25,3.5)(x,y)=(0.25,3.5), follow one branch at every split. The leaf height here is 3/43/4.\n\nGiven only x=0.25x=0.25, follow the matching branch at each XX-split and both branches at each YY-split.\n\n\nThe slice is a histogram. Its two bin areas are 3×(1/12)=1/43\\times(1/12)=1/4 and 1×(3/4)=3/41\\times(3/4)=3/4.\n\n\n\nTrace the diamond, then click and trace the vertical line. For this particular tree the areas already sum to one. In general, leaves on a slice can have different covariate denominators. Divide all heights by the sum of height times outcome volume to obtain a proper conditional density. A normalized point query also needs this factor, which can be obtained from the slice. Integrating the histogram then answers probability and quantile questions."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#a-forest-averages-the-trees-densities",
+    "href": "presentations/partition_tree/index.html#a-forest-averages-the-trees-densities",
+    "title": "Partition Tree",
+    "section": "A forest averages the trees’ densities",
+    "text": "A forest averages the trees’ densities\nA bootstrap sample moves split boundaries. Fit a Partition Tree to each sample and average the heights at the same (x,y)(x,y).\nhF(x,y)=1B∑b=1BĉAb(x,y)h_F(x,y)=\\frac{1}{B}\\sum_{b=1}^{B}\\widehat c_{A_b(x,y)}\n\nFor each xx, normalize the slice so its area is one. f̂F(y∣x)=hF(x,y)∫hF(x,u)dμY(u)\\widehat f_F(y\\mid x)=\n\\frac{h_F(x,y)}{\\int h_F(x,u)\\,d\\mu_Y(u)}\n\n\nEach tree can choose different bin edges. Evaluate the trees on their common slice and average their heights, then normalize. With one tree the same normalization rule applies. The next two datasets let us compare the resulting shapes with a density we know because we generated the data."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#the-mean-stays-put-as-the-spread-changes",
+    "href": "presentations/partition_tree/index.html#the-mean-stays-put-as-the-spread-changes",
+    "title": "Partition Tree",
+    "section": "The mean stays put as the spread changes",
+    "text": "The mean stays put as the spread changes\n\n\n\n\nBoth slices center near zero. The wider slice assigns more probability to large errors.\n\n\nStart with the observations at left. The two dotted lines mark the x values used for prediction. The two density panels share their scales. The generating law is normal with mean zero and standard deviation 0.25 on the left or 0.80 on the right. The rust steps are a single fitted tree. The teal steps average fifty bootstrap trees. The dashed curve is the generating density. The fits use 2,400 observations and at most 45 leaves per tree."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#two-modes-can-trade-probability-mass",
+    "href": "presentations/partition_tree/index.html#two-modes-can-trade-probability-mass",
+    "title": "Partition Tree",
+    "section": "Two modes can trade probability mass",
+    "text": "Two modes can trade probability mass\n\n\n\n\nThe peaks stay near −1.1-1.1 and +1.1+1.1. Moving across xx changes which outcome is more likely.\n\n\nEach band has standard deviation 0.26. The upper band’s probability changes from 20% to 80% at x = 0.5. A point prediction can land between the bands, just as the opening CART mean landed in the gap. Compare how the tree and the fifty-tree forest represent both peaks for the same query. These are illustrative fits on simulated data. The next tables report the paper’s cross-validation results."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#consistency",
+    "href": "presentations/partition_tree/index.html#consistency",
+    "title": "Partition Tree",
+    "section": "Almost-sure L1L^1 consistency",
+    "text": "Almost-sure L1L^1 consistency\nTheorem 3.2. Under these conditions, the conditional density estimate converges.\n∥f̂πN−f∥L1(ν)→0almost surely,ν=PX⊗μY.\\bigl\\|\\widehat f_{\\pi_N}-f\\bigr\\|_{L^1(\\nu)}\\longrightarrow 0\\quad\\text{almost surely},\\qquad \\nu=P_X\\otimes\\mu_Y.\nAssume i.i.d. sampling from PXY≪νP_{XY}\\ll\\nu, admissible leaves, finite VC dimension for leaf XX-projections, and finite-volume outcome truncations with vanishing tail mass.\n\nMaximum leaves in one tree m(𝒜N)=o(N)m(\\mathcal A_N)=o(N).\nMaximum groupings of the same NN points log⁡ΔN*(𝒜N)=o(N)\\log\\Delta_N^*(\\mathcal A_N)=o(N).\nMass in large leaves vanishes as the sample grows.\nPXY{z∈𝒵‾N:diam⁡(πN[z])&gt;γN}→0P_{XY}\\{z\\in\\bar{\\mathcal Z}_N:\\operatorname{diam}(\\pi_N[z])&gt;\\gamma_N\\}\\to0 a.s. for some γN→0\\gamma_N\\to0.\nMaximum distinct XX-regions in one tree mX(𝒜N)log⁡N/N→0m_X(\\mathcal A_N)\\sqrt{\\log N/N}\\to0.\n\nAngelim & Leite, Theorem 3.2\n\nThe norm integrates absolute density error over outcomes with respect to μY\\mu_Y and over covariates with respect to PXP_X. Every leaf AA has positive empirical covariate mass and positive outcome volume. The outcome truncation 𝒴‾N\\bar{\\mathcal Y}_N has finite μY\\mu_Y measure, and its excluded probability tends to zero almost surely. We write 𝒵‾N=𝒳×𝒴‾N\\bar{\\mathcal Z}_N=\\mathcal X\\times\\bar{\\mathcal Y}_N.\nThe family 𝒜N\\mathcal A_N contains the possible output partitions. For condition 1, count the leaves in each partition and take the largest count. For condition 2, hold a sample of NN points fixed and count the distinct groupings these partitions induce on it. A grouping counts once even if several partitions produce it. The growth function takes the largest such count over all samples of size NN.\nCondition 3 says that the total probability in leaves larger than a shrinking diameter threshold tends to zero. Large leaves can persist with vanishing probability mass. Diameter measures continuous spread after a bounded monotone transform and unresolved categories. For condition 4, project each leaf onto XX, count each distinct region once, and take the maximum over possible trees. For example, the two leaves from the earlier YY-split share one xx-band and contribute one region.\nTheorem 3.2 concerns the piecewise-constant estimate in Equation (11). Corollary C.4 gives the same convergence after slice normalization. Proposition C.5 controls conditions 1, 2, and 4 when the split budget is o(N/log⁡N)o(\\sqrt{N/\\log N}). For the greedy rule used in the benchmarks, Proposition C.8 gives shrinkage with a growing split budget under the paper’s gain-margin assumption."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#classification-log-loss-across-nine-datasets",
+    "href": "presentations/partition_tree/index.html#classification-log-loss-across-nine-datasets",
+    "title": "Partition Tree",
+    "section": "Classification log-loss across nine datasets",
+    "text": "Classification log-loss across nine datasets\n\n\n\n\nDataset\nPartition Tree\nCART\nPartition Forest\nRandom Forest\n\n\n\n\nIris\n0.46\n0.46\n0.50\n0.15\n\n\nBreast\n0.64\n0.70\n0.58\n0.56\n\n\nWine\n1.02\n1.47\n0.86\n0.88\n\n\nDigits\n0.45\n1.48\n0.29\n0.29\n\n\nSpam\n0.22\n0.29\n0.17\n0.16\n\n\nSupport2\n0.28\n0.28\n0.24\n0.25\n\n\nLetter\n0.62\n1.42\n0.49\n0.28\n\n\nBank\n0.22\n0.22\n0.20\n0.20\n\n\nAdult\n0.93\n0.92\n0.90\n0.90\n\n\nAverage rank\n1.33\n1.67\n1.44\n1.56\n\n\n\n\n\nFive-fold means. Lower is better. Ranks compare single trees and forests separately. Angelim & Leite, Table 1a\n\n\nPartition Tree scored lower log-loss than CART on 6 of 9 datasets.\n\n\nOn Digits, the single tree improves substantially over CART, while the two ensembles round to the same score. On Letter, Random Forest wins the ensemble comparison. The paper reports a lower mean loss for Partition Tree than CART on six of nine datasets and for Partition Forest than Random Forest on five. Some means coincide at the displayed precision. The paper gives fold standard deviations and paired comparisons."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#regression-log-loss-across-ten-datasets",
+    "href": "presentations/partition_tree/index.html#regression-log-loss-across-ten-datasets",
+    "title": "Partition Tree",
+    "section": "Regression log-loss across ten datasets",
+    "text": "Regression log-loss across ten datasets\n\n\n\n\n\n\n\n\n\n\n\n\n\nDataset\nPartition Tree\nCART\nCADET\nCDTree\nPartition Forest\nRF\n\n\n\n\nDiabetes\n5.65\n17.93\n5.59\n5.58\n5.49\n14.21\n\n\nBoston\n2.90\n8.39\n2.89\n2.88\n2.53\n4.60\n\n\nEnergy\n2.36\n1.67\n10.81\n1.55\n2.06\n1.55\n\n\nConcrete\n3.70\n7.45\n3.52\n3.66\n3.36\n3.86\n\n\nKin8nm\n−0.18\n9.42\n−0.22\n−0.18\n−0.45\n3.30\n\n\nAir\n2.12\n13.49\n13.78\n6.42\n2.02\n11.35\n\n\nPower\n2.87\n3.13\n2.90\n2.93\n2.60\n2.63\n\n\nNaval\n−4.38\n4.69\n−4.78\n−4.29\n−4.72\n−4.98\n\n\nCalifornia\n0.69\n7.07\n0.88\n0.58\n0.42\n3.11\n\n\nProtein\n2.22\n12.31\n3.13\n2.18\n2.10\n6.19\n\n\nAverage rank\n2.30\n3.70\n2.30\n1.70\n1.20\n1.80\n\n\n\n\n\nFive-fold means. Lower is better. CART and Random Forest (RF) use Gaussian residuals. Angelim & Leite, Table 1b\n\n\nCDTree led the single trees. Partition Forest beat RF on 8 of 10 datasets.\n\n\nAmong the four single trees, CDTree has the best average rank, and Partition Tree ties CADET. In the last two columns, Partition Forest has lower mean log-loss on eight of ten datasets. Energy and Naval favor RF. These numbers score the predictive density. On the separate point-prediction metric, Random Forest has the better average RMSE rank. Read log-loss within a dataset because continuous density depends on the outcome units."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#flow-transport",
+    "href": "presentations/partition_tree/index.html#flow-transport",
+    "title": "Partition Tree",
+    "section": "Flow Partition Tree transports samples toward uniform",
+    "text": "Flow Partition Tree transports samples toward uniform\n\n  \n    \n      \n        \n        \n        \n        Uniform\n        01\n        1\n        Input response\n        Output density\n      \n    \n    Conditional CDF · x &lt; 0.5\n    Conditional CDF · x ≥ 0.5\n  \n  \n    Play\n    Completed rounds \n    0 / 8\n  \n\n\nRead up to the fitted CDF, then left to the output axis. Each output becomes the next round’s input.\n\nThe simulation starts with two different bimodal response densities on the unit interval, so the initial CDF is the identity. Each tree splits at x = 0.5 and divides each response slice into eight equal bins. The tree structure is fixed for this demonstration. Each round estimates fresh leaf masses from the transported samples, shrinks the conditional density toward uniform with learning rate 0.55, and applies its piecewise-linear CDF. The dashed diagonal is the identity CDF. The vertical dashed line marks density one on the output histogram. As the output distribution approaches uniform, the fitted curve approaches the diagonal."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#flow-table-2",
+    "href": "presentations/partition_tree/index.html#flow-table-2",
+    "title": "Partition Tree",
+    "section": "How do the models rank across metrics?",
+    "text": "How do the models rank across metrics?\n\n\n\n\nModel\nCRPS rank\nCRPS wins\nNLL rank\nRMSE rank\nPCE rank\n\n\n\n\nFPT\n2.1\n3\n2.2\n2.6\n6.6\n\n\nFPT-D\n3.4\n0\n1.8\n4.0\n4.9\n\n\nTreeffuser\n2.3\n4\n5.2\n2.9\n3.4\n\n\nCatBoost\n6.3\n0\n4.6\n6.1\n5.6\n\n\nCatBoost-R\n3.8\n2\n9.4\n2.0\n9.0\n\n\nNGBoost\n5.1\n0\n6.9\n4.4\n7.6\n\n\nLinCDE\n7.8\n0\n5.9\n7.7\n6.4\n\n\nPT\n9.0\n0\n7.7\n9.1\n3.3\n\n\nPF\n6.9\n0\n5.0\n7.4\n7.1\n\n\nCTF\n8.3\n1\n6.3\n8.8\n1.1\n\n\n\n\n\nFlow Partition Trees, Table 2. Lower mean rank is better. Wins count datasets with the lowest mean continuous ranked probability score (CRPS). FPT is tuned and FPT-D uses fixed hyperparameters. Bold marks the best score or rank. Underlining marks comparisons with the best that did not reach significance after Holm adjustment.\n\n\nCross-metric summary over ten datasets: rank columns average within-dataset ranks (lower is better); CRPS wins count the lowest dataset means. Bold marks the best mean rank; underlined ranks are not significantly different from it (two-sided Wilcoxon signed-rank test over settings (Demšar, 2006, Benavoli et al., 2016), on log score ratios except for NLL differences, Holm-adjusted, α=0.05\\alpha=0.05). PT, PF and CTF denote Partition Tree, Partition Forest and Conditional Tree Flow. FPT is tuned; FPT-D uses fixed hyperparameters. CatBoost stops boosting on validation NLL, CatBoost-R on validation RMSE with a wider search space."
+  },
+  {
+    "objectID": "presentations/partition_tree/index.html#delivery-time-distributions",
+    "href": "presentations/partition_tree/index.html#delivery-time-distributions",
+    "title": "Partition Tree",
+    "section": "Delivery time distributions",
+    "text": "Delivery time distributions"
+  },
+  {
+    "objectID": "posts/code_practices/index.html",
+    "href": "posts/code_practices/index.html",
+    "title": "Can your code pass the test set?",
+    "section": "",
+    "text": "Code is not meant to be written once and never touched again. It is meant to be read, understood, and modified over time. This is especially true in dynamic environments, where requirements change, new features are added, and bugs are fixed. In such environments, code design quality is not just a nice-to-have; it is essential for the long-term success of the project.\nHere, I wish to share some thoughts on code design qualities, focusing on what we want, not how to get there. This is not a guide on how to write good code but rather a reflection on what good code design means in the context of software engineering and data science. This can also be useful for managers, product owners, and stakeholders who do not code but want to understand how quality impacts the product they are building.\nThe key takeaway I wish you to have is that good code design is about resilience. It is about not overfitting to our myopic view of the present, but rather about crafting a solution that can adapt and generalize to future requirements, just like a good machine learning model. It is about how effortless it is to adapt to changes."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#the-map-is-not-the-territory",
+    "href": "posts/code_practices/index.html#the-map-is-not-the-territory",
+    "title": "Can your code pass the test set?",
+    "section": "The map is not the territory",
+    "text": "The map is not the territory\n\n\n\n\n\nThere is this nice quote from Alfred Korzybski that says “the map is not the territory”. This means that any representation of reality is not reality itself, but rather a simplification of it. Also, it is shaped by our biases and limitations.\nBringing it to the context of this post, we can say that product requirements are not the product we are building. They are a simplification of what we want to build. Naturally, details can be missing and assumptions can be wrong, because sometimes reality is more complex than what we can express in words. Sometimes, we just don’t know, and that is okay. We just have to be cautious not to mistake the empty with the void.\nThis idea is key to understanding what comes next. Our code is designed to solve problems, but our definitions of problems are not perfect. They are made by humans, and hence this human aspect and the imprecise understanding of what should be done is deeply connected to the quality of the code we write, even more so than what our linter and unit tests end up being."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#easy-is-not-simple",
+    "href": "posts/code_practices/index.html#easy-is-not-simple",
+    "title": "Can your code pass the test set?",
+    "section": "Easy is not simple",
+    "text": "Easy is not simple\nBefore using the word “simple” to describe code, we should properly define what we mean by that. As gloriously explained by Rich Hickey in his talk “Simplicity Matters,” simple is not the same as easy. Simple is about not packing together unrelated concerns; it is about giving clear responsibility to each component, and making it easy to modify and extend. Easy, on the other hand, is subjective; it is what is closer to your knowledge and experience, it is what you are used to doing, and not necessarily good. We should focus here on the code, not on our perspective of knowledge and experience.\nThis definition aligns with the one in the book “A Philosophy of Software Design” (Ousterhout (2018)), which is a huge inspiration and reference for this post.\n\nComplexity is anything related to the structure of a software system that makes it hard to understand and modify the system\n\nComplexity is not related to the number of lines or functions; it is about the bigger picture. In his book, John Ousterhout also enumerates some symptoms of complexity:\n\nChange amplification: when a change in one part of the system requires changes in many other parts.\nCognitive load: when the code is hard to understand, requiring a lot of mental effort to comprehend.\nUnknown unknowns: when it is hard to diagnose where a change is needed to complete a task.\n\nBasically, simplicity implies less effort in the long term.\nThink about the code as a graph. The nodes are components (e.g., functions) we create, and the edges represent their dependencies. Simple code would be a graph with few edges, where edges represent dependencies of components on others. A dependency can be, for example, an assumption of the structure of the output of one component, the existence of certain methods, etc. The number of edges would be proportional to the complexity of the system and our cognitive load.\n\n\n\n\n\nIf we would perturb the graph above, such as changing the output of node 11, it would only affect the nodes that are directly connected to it, and not the whole graph. This is what we want to achieve with our code: a graph with few edges, where we can easily replace parts without affecting the whole system."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#the-objective-function",
+    "href": "posts/code_practices/index.html#the-objective-function",
+    "title": "Can your code pass the test set?",
+    "section": "The objective function",
+    "text": "The objective function\nHere, I’ll try to define a conceptual “objective function”—not mathematical, but rather a guiding principle that should shape how we design and structure our code.\n\nOverfitting to training data\nAt first glance, you might think that code is good if it simply does what it’s supposed to do. However, this perspective often encourages quick-and-dirty solutions and spaghetti code that might solve immediate problems but overlook the bigger picture.\n\n\n\n\n\nImagine an abstract space of requirements, like the one above. We can only see a tiny fraction of our long-term goals clearly. Focusing too narrowly on the present moment—what we already know—makes us overfit to our current understanding, limiting our ability to adapt to new challenges. The more complex and specifically tuned code is, the more likely it is to overfit and struggle when things inevitably change.\n\n\n\n\n\nWhile “easy” solutions may feel quicker and simpler initially, generalizable, well-designed solutions usually save more effort in the long run. They avoid the exponential increase in complexity and maintenance costs that come from constantly adapting overfitted solutions.\n\n\n\n\n\n\n\nThe regret\nI’ve often wondered what exactly we’re optimizing for when designing and writing code. Just like machine learning models use metrics to evaluate their performance, we need something to measure code quality. After some thought, I’ve come to see regret as a useful measure.\nIn simple terms, regret is the extra effort spent compared to an ideal solution. This concept is borrowed from machine learning, particularly from the “multi-armed bandit” problem, where decisions must be made based on limited information. The goal there is to minimize regret—the gap between your choices and the best possible outcomes—over time. This mirrors how we write code, making choices with incomplete information and constantly adapting as we learn more.\nExperienced developers naturally have lower regret because they anticipate changes more effectively, ask better questions early on, and build resilient systems from the start.\n\n\n\n\n\n\n\nGood code starts before writing code\nSince we rarely have full information upfront, we shouldn’t aim for perfect code immediately. Instead, the first thing we should do is ask questions:\n\nWhat requirements are likely to change?\nWhat requirements are unlikely to change?\nWhat assumptions are we making?\nWhat is the expected lifespan of the product?\n\nWith the answers to these questions, we can start shaping our design. Once we have a draft proposal, we can evaluate how different possible future changes would affect the current structure.\n\n\n\n\n\nDesigning often involves identifying stable components and defining contracts between them. Asking the right questions early helps us group functionalities meaningfully and build systems that remain flexible over time.\n\n\nAvoid premature optimization\nWhile it’s important to anticipate change, guessing too far ahead about possible future requirements can be dangerous. This is known as premature optimization. It can create significant regret—first due to excessive effort upfront, and later because reality rarely matches our early guesses.\n\n\n\n\n\nI once found myself in this trap: trying to optimize a codebase that wasn’t even in production yet. I went deep into SOLID principles, endlessly splitting functions and abstracting for flexibility I thought I might need later. But those future requirements never arrived. The code became so abstract that it was hard to maintain, and when real changes eventually came, I had to rewrite everything anyway."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#conclusion",
+    "href": "posts/code_practices/index.html#conclusion",
+    "title": "Can your code pass the test set?",
+    "section": "Conclusion",
+    "text": "Conclusion\nWriting good code isn’t just about making something that works today — it’s about building solutions that can adapt, evolve, and scale as requirements inevitably change. Much like training a machine learning model, if we overfit our code to the present, we may pay a heavy price in the future. Balancing simplicity, flexibility, and pragmatism is what leads to resilient systems with low long-term maintenance cost.\nBy focusing on minimizing regret—the extra effort caused by early design decisions that don’t age well—we can make smarter choices even when information is incomplete. And while experience helps us make better bets, asking the right questions early on dramatically increases our odds of success.\nIn the end, it’s not about writing perfect code — it’s about writing code that can gracefully survive its own future."
+  },
+  {
+    "objectID": "posts/code_practices/index.html#key-takeaways",
+    "href": "posts/code_practices/index.html#key-takeaways",
+    "title": "Can your code pass the test set?",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nCode quality is about resilience, not just correctness\nOverfitting code to today’s requirements creates fragile systems.\nMinimize regret: optimize for adaptability, not hypothetical future needs.\nGood design starts with asking the right questions, not jumping into abstractions."
+  },
+  {
+    "objectID": "blog.html",
+    "href": "blog.html",
+    "title": "Bytes of Thoughts",
+    "section": "",
+    "text": "Can your code pass the test set?\n\n\n\nsoftware design\n\nmachine learning\n\n\n\n\n\n\n\n\n\n\n\nJun 10, 2025\n\n\nFelipe Angelim\n\n\n\n\n\nNo matching items"
+  }
+]
