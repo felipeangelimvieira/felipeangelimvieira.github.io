@@ -1,0 +1,138 @@
+```{=html}
+<div class="flow-demo">
+  <svg viewBox="0 0 1080 415" style="display:block;max-height:460px" width="100%" role="img"
+       aria-label="Two conditional CDFs. Samples rise from the input axis to the fitted curve, then move left to the output axis. Each output becomes the next round’s input. Histograms on the left show the output density.">
+    <defs>
+      <g id="flow-axes" fill="#213b40" font-size="16">
+        <path d="M165 51V341H455" stroke="#536e68" fill="none"/>
+        <path d="M165 341L455 51" stroke="#aaa" stroke-dasharray="5 5"/>
+        <path d="M135 51V341" stroke="#81928f" stroke-dasharray="4 4"/>
+        <text x="135" y="44" text-anchor="middle">Uniform</text>
+        <text x="154" y="363">0</text><text x="451" y="363">1</text>
+        <text x="172" y="61">1</text>
+        <text x="310" y="386" text-anchor="middle">Input response</text>
+        <text transform="translate(29 196) rotate(-90)" text-anchor="middle">Output density</text>
+      </g>
+    </defs>
+    <g class="flow-panel"><use href="#flow-axes"/><text x="310" y="29" text-anchor="middle" fill="#006d68" font-size="22">Conditional CDF · x &lt; 0.5</text></g>
+    <g class="flow-panel" transform="translate(525 0)"><use href="#flow-axes"/><text x="310" y="29" text-anchor="middle" fill="#b74d26" font-size="22">Conditional CDF · x ≥ 0.5</text></g>
+  </svg>
+  <div style="display:flex;align-items:center;gap:1em;font-size:.65em">
+    <button type="button" style="font:inherit;min-width:5em">Play</button>
+    <label>Completed rounds <input type="range" min="0" max="8" step="1" value="0"></label>
+    <output>0 / 8</output>
+  </div>
+</div>
+<script>
+(() => {
+  const demo = document.currentScript.previousElementSibling;
+  const panels = demo.querySelectorAll('.flow-panel');
+  const button = demo.querySelector('button');
+  const slider = demo.querySelector('input');
+  const output = demo.querySelector('output');
+  const rounds = Number(slider.max);
+  const bins = 8;
+  const alpha = 0.55;
+  let seed = 42;
+  function random() {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return (seed + 0.5) / 4294967296;
+  }
+  function mark(panel, tag, attributes) {
+    const shape = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [name, value] of Object.entries(attributes)) shape.setAttribute(name, value);
+    panel.appendChild(shape);
+    return shape;
+  }
+  const bin = u => Math.min(bins - 1, Math.floor(u * bins));
+  const cells = ['#006d68', '#b74d26'].map((color, cell) => {
+    const panel = panels[cell];
+    const bars = Array.from({length: bins}, (_, k) => mark(panel, 'rect', {
+      y: 341 - (k+1)*290/bins, height: 290/bins - 1, fill: color, opacity: 0.38
+    }));
+    const curve = mark(panel, 'polyline', {fill: 'none', stroke: color, 'stroke-width': 3});
+    const dots = [];
+    const start = [];
+    for (let i = 0; i < 320; i++) {
+      const center = random() < (cell ? 0.3 : 0.7) ? 0.22 : 0.74;
+      start.push(random() < 0.12 ? random() : center + 0.15*(random() + random() - 1));
+      dots.push(mark(panel, 'circle', {r: 2.8, fill: color, opacity: 0.35}));
+    }
+    const states = [start];
+    const fits = [];
+    for (let t = 0; t < rounds; t++) {
+      const current = states[t];
+      const counts = Array(bins).fill(0);
+      for (const u of current) counts[bin(u)]++;
+      const cdf = [0];
+      for (const count of counts) cdf.push(cdf.at(-1) + (1-alpha)/bins + alpha*count/current.length);
+      fits.push(cdf);
+      states.push(current.map(u => {
+        const k = bin(u);
+        return cdf[k] + (u*bins - k)*(cdf[k+1] - cdf[k]);
+      }));
+    }
+    return {states, dots, bars, fits, curve};
+  });
+
+  const clamp = value => Math.max(0, Math.min(1, value));
+  let position = 0;
+  let frame = 0;
+  function draw(t) {
+    position = t;
+    const layer = Math.max(0, Math.ceil(t) - 1);
+    const phase = t - layer;
+    const returning = layer > 0 && phase < 0.24;
+    const rise = clamp((phase - 0.24)/0.30);
+    const project = clamp((phase - 0.58)/0.28);
+    for (const {states, dots, bars, fits, curve} of cells) {
+      curve.setAttribute('points', fits[layer].map((v, k) =>
+        (165 + 290*k/bins) + ',' + (341 - 290*v)).join(' '));
+      const counts = Array(bins).fill(0);
+      states[layer].forEach((u, i) => {
+        const v = states[layer+1][i];
+        let horizontal = u*(1-project);
+        let vertical = v*rise;
+        if (returning) {
+          const angle = (1 - phase/0.24)*Math.PI/2;
+          horizontal = u*Math.cos(angle);
+          vertical = u*Math.sin(angle);
+        }
+        dots[i].setAttribute('cx', 165 + 290*horizontal);
+        dots[i].setAttribute('cy', 341 - 290*vertical);
+        counts[bin(v)]++;
+      });
+      bars.forEach((bar, k) => {
+        const width = 30*bins*counts[k]/dots.length;
+        bar.setAttribute('x', 165-width);
+        bar.setAttribute('width', width);
+        bar.setAttribute('opacity', 0.55*project);
+      });
+    }
+    slider.value = Math.floor(t);
+    const action = returning ? 'Reuse outputs as inputs' : phase < 0.58
+      ? 'Read the fitted CDF' : 'Collect the outputs';
+    output.value = 'Round ' + (layer+1) + ' / ' + rounds + ' · ' + action;
+  }
+  function pause() {
+    cancelAnimationFrame(frame);
+    frame = 0;
+    button.textContent = position === rounds ? 'Replay' : 'Play';
+  }
+  button.onclick = () => {
+    if (frame) return pause();
+    if (position === rounds) draw(0);
+    const origin = performance.now() - position*2600;
+    button.textContent = 'Pause';
+    function tick(now) {
+      draw(Math.min(rounds, Math.max(0, (now - origin)/2600)));
+      if (position === rounds) pause();
+      else frame = requestAnimationFrame(tick);
+    }
+    frame = requestAnimationFrame(tick);
+  };
+  slider.oninput = () => { draw(Number(slider.value)); pause(); };
+  draw(0);
+})();
+</script>
+```

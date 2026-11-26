@@ -1,0 +1,24 @@
+## How do the models rank across metrics? {#flow-table-2}
+
+::: {.flow-table}
+| Model | CRPS rank | CRPS wins | NLL rank | RMSE rank | PCE rank |
+|:---|---:|---:|---:|---:|---:|
+| FPT | **2.1** | 3 | <u>2.2</u> | <u>2.6</u> | 6.6 |
+| FPT-D | 3.4 | 0 | **1.8** | 4.0 | 4.9 |
+| Treeffuser | <u>2.3</u> | 4 | 5.2 | <u>2.9</u> | 3.4 |
+| CatBoost | 6.3 | 0 | 4.6 | 6.1 | 5.6 |
+| CatBoost-R | <u>3.8</u> | 2 | 9.4 | **2.0** | 9.0 |
+| NGBoost | 5.1 | 0 | 6.9 | 4.4 | 7.6 |
+| LinCDE | 7.8 | 0 | 5.9 | 7.7 | 6.4 |
+| PT | 9.0 | 0 | 7.7 | 9.1 | 3.3 |
+| PF | 6.9 | 0 | 5.0 | 7.4 | 7.1 |
+| CTF | 8.3 | 1 | 6.3 | 8.8 | **1.1** |
+:::
+
+::: {.source}
+*Flow Partition Trees*, Table 2. Lower mean rank is better. Wins count datasets with the lowest mean continuous ranked probability score (CRPS). FPT is tuned and FPT-D uses fixed hyperparameters. Bold marks the best score or rank. Underlining marks comparisons with the best that did not reach significance after Holm adjustment.
+:::
+
+::: {.notes}
+Cross-metric summary over ten datasets: rank columns average within-dataset ranks (lower is better); CRPS wins count the lowest dataset means. Bold marks the best mean rank; underlined ranks are not significantly different from it (two-sided Wilcoxon signed-rank test over settings (Demšar, 2006, Benavoli et al., 2016), on log score ratios except for NLL differences, Holm-adjusted, $\alpha=0.05$). PT, PF and CTF denote Partition Tree, Partition Forest and Conditional Tree Flow. FPT is tuned; FPT-D uses fixed hyperparameters. CatBoost stops boosting on validation NLL, CatBoost-R on validation RMSE with a wider search space.
+:::

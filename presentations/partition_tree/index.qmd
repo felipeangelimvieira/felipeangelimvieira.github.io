@@ -15,6 +15,8 @@ format:
     center: false
 ---
 
+# Motivation {.center}
+
 ## Where would a regression tree put its prediction?
 
 :::: {.columns}
@@ -56,24 +58,52 @@ Ask for a prediction before revealing the line. Every observation in this leaf i
 ![](figures/measurable-event.svg){.fragment data-fragment-index="1" fig-alt="Each tile is an atom. The upper-left tile A and lower-right tile B are highlighted. Their union is the event E."}
 
 ![](figures/probability-measure.svg){.fragment data-fragment-index="2" fig-alt="A ruler from zero to one assigns a segment to each tile. The highlighted segments have lengths 0.10 and 0.25, giving the event probability 0.35."}
-
-![](figures/tree-over-tiles.svg){.fragment data-fragment-index="3" fig-alt="A binary tree stands above the same square in perspective. Its root represents the whole square. Four levels of splits lead to 16 leaves, one on each tile. Teal and orange paths end at A and B."}
 :::
 :::
 ::::
 
 ::: {.notes}
-Kolmogorov’s 1933 framework gives discrete and continuous probability the same starting point. Point to the dot. Any point in the square can be the outcome $\omega$.
+Kolmogorov’s 1933 framework gives discrete and continuous probability the same starting point. The sample space $\Omega$ lists the possible outcomes. The sigma-algebra $\mathcal F$ specifies the measurable events, and $P$ assigns their probabilities. Point to the dot. Any point in the square can be the outcome $\omega$.
 
-First click: the grid defines which questions we can ask. “Did the point land in either shaded tile?” is one event. Each tile contains infinitely many points and is an atom of this $\sigma$-algebra. Choosing which of the 16 tiles to include gives $2^{16}$ events.
+On the first click, treat each tile as a block of outcomes. “Did the point land in either shaded tile?” is one event. Each tile contains infinitely many points and is an atom of this $\sigma$-algebra. Choosing which of the 16 tiles to include gives $2^{16}$ events.
 
-Second click: read the ruler from left to right in the same order as the tiles, row by row. Segment length shows probability. The shaded tiles have equal area but carry different masses. Since they are disjoint, their probabilities add.
-
-Third click: start at the root, the whole square. Each fork cuts the current rectangle in half. Follow the teal path through four cuts to reach tile $A$. The orange path ends at $B$. Our event is the union of those two leaves. Here we chose the cuts by hand. Where would a tree cut if it learned from the data?
+On the second click, read the ruler from left to right in the same order as the tiles, row by row. Segment length shows probability. The shaded tiles have equal area but carry different masses. Since they are disjoint, their probabilities add.
 
 For a continuous example, keep the same square, choose its Borel $\sigma$-algebra, and let probability be uniform area. Now each singleton is an event of probability zero, while the whole square has probability one. Countable additivity is consistent with that because the square contains uncountably many points.
 
 Photograph by Konrad Jacobs, © Mathematisches Forschungsinstitut Oberwolfach. [Portrait on Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Andrej_Nikolajewitsch_Kolmogorov.jpg) · [CC BY-SA 2.0 DE](https://creativecommons.org/licenses/by-sa/2.0/de/)
+:::
+
+## One die, three levels of information {#die-sigma-algebras}
+
+Roll a fair six-sided die. The sample space is always $\Omega=\{1,2,3,4,5,6\}$.
+
+| What we learn | Blocks of outcomes | Measurable events |
+|:--------------|:-------------------|------------------:|
+| $\mathcal F_0$ · No face information | $\Omega$ | 2 |
+| $\mathcal F_1$ · Odd or even | $\{1,3,5\},\ \{2,4,6\}$ | 4 |
+| $\mathcal F_2$ · Exact face | $\{1\},\ \{2\},\ \ldots,\ \{6\}$ | 64 |
+
+::: {.fragment}
+Measurable events are unions of these blocks, called **atoms**. Finer atoms give $\mathcal F_0\subsetneq\mathcal F_1\subsetneq\mathcal F_2$.
+:::
+
+::: {.fragment}
+Parity lets us ask if the roll was even, with probability $1/2$. The exact face lets us also ask if it was $2$, with probability $1/6$.
+:::
+
+::: {.notes}
+With one atom, $\mathcal F_0=\{\varnothing,\Omega\}$. With two atoms, $\mathcal F_1$ also contains the odd and even events. With six singleton atoms, $\mathcal F_2=2^\Omega$. These collections contain $\Omega$ and are closed under complements and countable unions. The fair-die measure sums the $1/6$ masses of the faces in each event. If we reveal the parity first and then the exact face of the same roll, the nested sigma-algebras form a filtration.
+:::
+
+## From a partition to a tree {#tree-over-partition}
+
+::: {.plot style="width: 75%; margin: 0 auto"}
+![](figures/tree-over-tiles.svg){fig-alt="A binary tree stands above the same square in perspective. Its root represents the whole square. Four levels of splits lead to 16 leaves, one on each tile. Teal and orange paths end at A and B."}
+:::
+
+::: {.notes}
+Start at the root, the whole square. Each fork cuts the current rectangle in half. Follow the teal path through four cuts to reach tile $A$. The orange path ends at $B$. Our event is the union of those two leaves. Here we chose the cuts by hand. Where would a tree cut if it learned from the data?
 :::
 
 ## What if we also split the outcome?
@@ -102,6 +132,8 @@ Per unit of outcome space, the upper cell is **nine times as dense**.
 ::: {.notes}
 Give the audience a moment to count. The lower cell holds a quarter of the mass over three quarters of the height. Each rectangle will get one density. A further split could distinguish the little cluster near zero from the gap above it.
 :::
+
+# Partition Tree {.center}
 
 ## Measuring the mass in a rectangle
 
@@ -194,6 +226,18 @@ Sorted thresholds need one scan per coordinate. For balanced growth, the paper g
 An x-cut changes which observations supply the covariate denominator. A y-cut keeps that denominator and changes the outcome volumes. The gain uses unnormalized leaf heights, which makes it local. A priority queue keeps the best split available at every leaf. Here d_Z counts the splittable input and outcome coordinates. Sorting afresh within each node gives the balanced-tree comparison O(d_Z N log² N). These are training costs.
 :::
 
+## Scanning for an $X$-split {#x-split-scan}
+
+Sweep $x=t$ through the upper-left leaf, testing the midpoints in its $x$-band.
+
+{{< include _x-split-scan.qmd >}}
+
+[Angelim & Leite, Appendix B.1, Algorithm 1](https://arxiv.org/pdf/2602.04042v3#page=18){.source}
+
+::: {.notes}
+The upper-left leaf has $A_X=[0,0.5]$ and $A_Y=(3,4]$. Sort the samples in $A_X$ by $x$ and make a second sorted list for the samples in the leaf. Each pointer advances to the last value at or below $t$. With unit weights, the pointers give the left counts and subtracting from the parent totals gives the right counts. Pause at $t=0.10$ to show that the low point at $x=0.08$ advances only the covariate pointer. At $t=0.25$, the left child has six covariate samples and five joint samples. Each list is traversed at most once, and the four counts feed the gain for each admissible split.
+:::
+
 ## Predicting with Partition Tree
 
 :::: {.columns}
@@ -239,6 +283,8 @@ $$\widehat f_F(y\mid x)=
 Each tree can choose different bin edges. Evaluate the trees on their common slice and average their heights, then normalize. With one tree the same normalization rule applies. The next two datasets let us compare the resulting shapes with a density we know because we generated the data.
 :::
 
+# Results {.center}
+
 ## The mean stays put as the spread changes
 
 ::: {.plot}
@@ -265,6 +311,32 @@ The peaks stay near $-1.1$ and $+1.1$. Moving across $x$ changes **which outcome
 
 ::: {.notes}
 Each band has standard deviation 0.26. The upper band's probability changes from 20% to 80% at x = 0.5. A point prediction can land between the bands, just as the opening CART mean landed in the gap. Compare how the tree and the fifty-tree forest represent both peaks for the same query. These are illustrative fits on simulated data. The next tables report the paper's cross-validation results.
+:::
+
+## Almost-sure $L^1$ consistency {#consistency}
+
+**Theorem 3.2.** Under these conditions, the conditional density estimate converges.
+
+$$\bigl\|\widehat f_{\pi_N}-f\bigr\|_{L^1(\nu)}\longrightarrow 0\quad\text{almost surely},\qquad \nu=P_X\otimes\mu_Y.$$
+
+Assume i.i.d. sampling from $P_{XY}\ll\nu$, admissible leaves, finite VC dimension for leaf $X$-projections, and finite-volume outcome truncations with vanishing tail mass.
+
+1. **Maximum leaves in one tree** $m(\mathcal A_N)=o(N)$.
+2. **Maximum groupings of the same $N$ points** $\log\Delta_N^*(\mathcal A_N)=o(N)$.
+3. **Mass in large leaves vanishes** as the sample grows.\
+   $P_{XY}\{z\in\bar{\mathcal Z}_N:\operatorname{diam}(\pi_N[z])>\gamma_N\}\to0$ a.s. for some $\gamma_N\to0$.
+4. **Maximum distinct $X$-regions in one tree** $m_X(\mathcal A_N)\sqrt{\log N/N}\to0$.
+
+[Angelim & Leite, Theorem 3.2](https://arxiv.org/pdf/2602.04042v3#page=7){.source}
+
+::: {.notes}
+The norm integrates absolute density error over outcomes with respect to $\mu_Y$ and over covariates with respect to $P_X$. Every leaf $A$ has positive empirical covariate mass and positive outcome volume. The outcome truncation $\bar{\mathcal Y}_N$ has finite $\mu_Y$ measure, and its excluded probability tends to zero almost surely. We write $\bar{\mathcal Z}_N=\mathcal X\times\bar{\mathcal Y}_N$.
+
+The family $\mathcal A_N$ contains the possible output partitions. For condition 1, count the leaves in each partition and take the largest count. For condition 2, hold a sample of $N$ points fixed and count the distinct groupings these partitions induce on it. A grouping counts once even if several partitions produce it. The growth function takes the largest such count over all samples of size $N$.
+
+Condition 3 says that the total probability in leaves larger than a shrinking diameter threshold tends to zero. Large leaves can persist with vanishing probability mass. Diameter measures continuous spread after a bounded monotone transform and unresolved categories. For condition 4, project each leaf onto $X$, count each distinct region once, and take the maximum over possible trees. For example, the two leaves from the earlier $Y$-split share one $x$-band and contribute one region.
+
+Theorem 3.2 concerns the piecewise-constant estimate in Equation (11). Corollary C.4 gives the same convergence after slice normalization. Proposition C.5 controls conditions 1, 2, and 4 when the split budget is $o(\sqrt{N/\log N})$. For the greedy rule used in the benchmarks, Proposition C.8 gives shrinkage with a growing split budget under the paper's gain-margin assumption.
 :::
 
 ## Classification log-loss across nine datasets
@@ -326,7 +398,7 @@ CDTree led the single trees. Partition Forest beat RF on **8 of 10** datasets.
 Among the four single trees, CDTree has the best average rank, and Partition Tree ties CADET. In the last two columns, Partition Forest has lower mean log-loss on eight of ten datasets. Energy and Naval favor RF. These numbers score the predictive density. On the separate point-prediction metric, Random Forest has the better average RMSE rank. Read log-loss within a dataset because continuous density depends on the outcome units.
 :::
 
-## Future Research
+# Future Research
 
 **Balancing Partition Forest.** Can the same rectangles give us weights that balance treatment and covariates in observational data?
 
@@ -341,3 +413,19 @@ Among the four single trees, CDTree has the best average rank, and Partition Tre
 ::: {.notes}
 The balancing work uses each rectangle to estimate the ratio of independent covariate and treatment mass to their observed joint mass. The flow direction asks how far we can take tree-based conditional distributions by composing transformations.
 :::
+
+## Flow Partition Tree transports samples toward uniform {#flow-transport}
+
+{{< include _flow-transport.qmd >}}
+
+Read up to the fitted CDF, then left to the output axis. Each output becomes the next round’s input.
+
+::: {.notes}
+The simulation starts with two different bimodal response densities on the unit interval, so the initial CDF is the identity. Each tree splits at x = 0.5 and divides each response slice into eight equal bins. The tree structure is fixed for this demonstration. Each round estimates fresh leaf masses from the transported samples, shrinks the conditional density toward uniform with learning rate 0.55, and applies its piecewise-linear CDF. The dashed diagonal is the identity CDF. The vertical dashed line marks density one on the output histogram. As the output distribution approaches uniform, the fitted curve approaches the diagonal.
+:::
+
+{{< include _flow-results.qmd >}}
+
+## Delivery time distributions {#delivery-time-distributions}
+
+![](figures/distribution_examples.png){height="570" fig-align="center" fig-alt="Four fitted delivery-time densities compared with the simulator truth. The predicted probability of exceeding 35 minutes is 66% for Partition Tree, 46% for Partition Forest, 59% for backward boosting, and 63% for Flow."}

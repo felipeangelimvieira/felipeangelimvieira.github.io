@@ -1,6 +1,7 @@
 ---
 title: "Bayesian Inference - Introduction with Applications"
 author: "Felipe Angelim"
+draft: true
 format: 
   revealjs:
     theme: [default, custom.scss] # Example: add a custom.scss for styling

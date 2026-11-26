@@ -1,0 +1,142 @@
+```{=html}
+<style>
+  .split-scan .scan-plot svg { display: block; width: 100%; height: auto; }
+</style>
+<div class="split-scan" style="display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);align-items:center;gap:1em">
+  <div class="scan-plot" role="img"
+       aria-label="The same partition of 20 samples. A vertical rule crosses the left x-band. Green rings mark crossed samples. A red center also marks membership in the upper-left leaf.">
+{{< include figures/split.svg >}}
+  </div>
+  <div>
+    <p class="scan-threshold-value" style="font-size:.78em;font-weight:600" aria-hidden="true"></p>
+    <table aria-label="Sample counts for the candidate split" aria-live="polite"
+           style="width:100%;font-size:.76em;font-variant-numeric:tabular-nums">
+      <thead><tr><th scope="col">Count</th><th scope="col">Left</th><th scope="col">Right</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" style="color:#176c3c"><i>n</i><sub>X</sub></th><td>0</td><td>12</td></tr>
+        <tr><th scope="row" style="color:#bc303d"><i>n</i><sub>XY</sub></th><td>0</td><td>9</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.69em">Green rings mark the samples counted in <i>n</i><sub>X</sub> on the left.
+       Red centers mark the ones also counted in <i>n</i><sub>XY</sub>.</p>
+    <div style="display:flex;align-items:center;gap:.8em;font-size:.68em">
+      <button type="button" style="font:inherit;min-width:4.4em">Play</button>
+      <label>Candidate <input type="range" min="0" step="1" value="0" style="width:5.1em;accent-color:#006d68"></label>
+      <span class="scan-position" aria-hidden="true"></span>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  const demo = document.currentScript.previousElementSibling;
+  const plot = demo.querySelector('.scan-plot svg');
+  const bounds = plot.querySelector('clipPath rect');
+  const [plotLeft, plotTop, plotWidth, plotHeight] = ['x', 'y', 'width', 'height']
+    .map(name => Number(bounds.getAttribute(name)));
+  const bandEnd = plotLeft + plotWidth / 2;
+  const outcomeEdge = plotTop + plotHeight / 4;
+  const samples = Array.from(plot.querySelectorAll('#PathCollection_1 use'), dot => ({
+    x: Number(dot.getAttribute('x')),
+    y: Number(dot.getAttribute('y'))
+  })).filter(({x}) => x <= bandEnd).sort((a, b) => a.x - b.x);
+  const lists = [samples, samples.filter(({y}) => y < outcomeEdge)];
+
+  const overlay = plot.appendChild(document.createElementNS(plot.namespaceURI, 'g'));
+  overlay.innerHTML = `
+    ${samples.map(({x, y}) => `
+      <g class="scan-highlight">
+        <circle class="scan-ring" cx="${x}" cy="${y}" r="5.3" fill="#fbfaf6" stroke="#176c3c" stroke-width="1.4"/>
+        <circle class="scan-center" cx="${x}" cy="${y}" r="3.3" fill="${y < outcomeEdge ? '#bc303d' : '#176c3c'}"/>
+      </g>`).join('')}
+    <path class="scan-threshold" visibility="hidden" d="M0 ${plotTop}v${plotHeight}"
+          stroke="#213b40" stroke-width="1.7" stroke-dasharray="5 3"/>`;
+
+  const cut = overlay.querySelector('.scan-threshold');
+  const highlights = overlay.querySelectorAll('.scan-highlight');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const button = demo.querySelector('button');
+  const slider = demo.querySelector('input');
+  const readout = demo.querySelector('.scan-position');
+  const thresholdValue = demo.querySelector('.scan-threshold-value');
+  const tableRows = demo.querySelectorAll('tbody tr');
+
+  const steps = [{cutX: plotLeft, left: [0, 0]}];
+  const left = [0, 0];
+  const xValues = [...new Set(samples.map(({x}) => x))];
+  for (let i = 1; i < xValues.length; i++) {
+    const cutX = (xValues[i - 1] + xValues[i]) / 2;
+    lists.forEach((list, index) => {
+      while (left[index] < list.length && list[left[index]].x <= cutX) left[index]++;
+    });
+    steps.push({cutX, left: [...left]});
+  }
+
+  const last = steps.length - 1;
+  slider.max = last;
+  let step = 0;
+  let timer;
+  let frame;
+  let visibleX = plotLeft;
+
+  function paintCut(x) {
+    visibleX = x;
+    cut.setAttribute('transform', `translate(${x} 0)`);
+    highlights.forEach((mark, i) => {
+      mark.setAttribute('visibility', samples[i].x <= x ? 'visible' : 'hidden');
+    });
+  }
+
+  function moveCut(targetX, animate) {
+    cancelAnimationFrame(frame);
+    if (!animate || reducedMotion.matches) return paintCut(targetX);
+    const originX = visibleX;
+    const start = performance.now();
+    function tick(now) {
+      const progress = Math.min((now - start) / 280, 1);
+      paintCut(originX + progress * (targetX - originX));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    }
+    frame = requestAnimationFrame(tick);
+  }
+
+  function draw(index, animate = false) {
+    step = index;
+    const {cutX, left} = steps[index];
+    const threshold = Number(((cutX - plotLeft) / plotWidth).toFixed(3));
+    moveCut(cutX, animate);
+    cut.setAttribute('visibility', index ? 'visible' : 'hidden');
+    thresholdValue.textContent = index ? `x = ${threshold}` : 'Before the first candidate';
+    left.forEach((count, row) => {
+      const {cells} = tableRows[row];
+      cells[1].textContent = count;
+      cells[2].textContent = lists[row].length - count;
+    });
+    slider.value = index;
+    slider.setAttribute('aria-valuetext', index ? `Candidate ${index} of ${last}, threshold ${threshold}` : 'Before the first candidate');
+    readout.textContent = `${index} / ${last}`;
+  }
+
+  function pause() {
+    clearInterval(timer);
+    timer = undefined;
+    button.textContent = step === last ? 'Replay' : 'Play';
+  }
+
+  function advance() {
+    draw(step + 1, true);
+    if (step === last) pause();
+  }
+
+  button.onclick = () => {
+    if (timer) return pause();
+    if (step === last) draw(0);
+    button.textContent = 'Pause';
+    timer = setInterval(advance, 1150);
+    advance();
+  };
+  slider.oninput = () => { draw(Number(slider.value)); pause(); };
+  document.addEventListener('DOMContentLoaded', () => Reveal.on('slidechanged', pause));
+  draw(0);
+})();
+</script>
+```
